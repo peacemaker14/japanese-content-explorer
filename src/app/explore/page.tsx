@@ -80,9 +80,6 @@ export default async function ExplorePage({
   );
   return (
     <section className="explore-screen">
-      {!browsingCategories && (
-        <CategoryNavigation categories={categories} filters={filters} />
-      )}
       <div className="explore-heading">
         <h1>
           {activeCategory?.name ??
@@ -97,6 +94,9 @@ export default async function ExplorePage({
       </div>
       {activeCategory && (
         <p className="category-context">{activeCategory.description}</p>
+      )}
+      {!browsingCategories && (
+        <CategoryNavigation categories={categories} filters={filters} />
       )}
       {browsingCategories && (
         <CategoryBrowser categories={categories} filters={filters} />

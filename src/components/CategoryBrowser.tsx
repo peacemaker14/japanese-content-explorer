@@ -33,18 +33,18 @@ export function CategoryBrowser({
             href={categoryUrl(category.slug, filters)}
             key={category.slug}
           >
-            {category.cover ? (
+            {category.cover && (
               <VideoThumbnail src={category.cover.thumbnailUrl} />
-            ) : (
-              <div className="category-cover-empty">
-                No published videos yet
-              </div>
             )}
             <div className="category-card-copy">
               <h3>{category.name}</h3>
-              <p className="category-video-count">
-                {category.videoCount.toLocaleString("en-US")} YouTube{" "}
-                {category.videoCount === 1 ? "video" : "videos"}
+              <p
+                className="category-video-count"
+                data-empty={category.videoCount === 0}
+              >
+                {category.videoCount === 0
+                  ? "No published videos yet"
+                  : `${category.videoCount.toLocaleString("en-US")} YouTube ${category.videoCount === 1 ? "video" : "videos"}`}
               </p>
               <p className="category-description">{category.description}</p>
             </div>

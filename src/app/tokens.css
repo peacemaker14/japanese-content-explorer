@@ -16,26 +16,34 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --color-error: oklch(52% 0.19 27);
   --color-success: oklch(50% 0.12 150);
-  --color-paper: #f8f8f8;
-  --color-panel: #ffffff;
-  --color-paper-2: #eeeeee;
-  --color-paper-3: #e0e0e0;
-  --color-ink: #222222;
-  --color-ink-2: #4f4f4f;
-  --color-muted: #4f4f4f;
-  --color-rule: #e0e0e0;
-  --color-rule-2: #adadad;
-  --color-accent: #222222;
-  --color-accent-ink: #ffffff;
-  --color-focus: #222222;
-  --font-display:
-    "Helvetica Neue", Arial, YuGothic, "Yu Gothic Medium", "Yu Gothic", Verdana,
-    Meiryo, sans-serif;
+  --color-canvas: oklch(95.472% 0.01365 92.984);
+  --color-paper: oklch(98.915% 0.0092 106.567);
+  --color-panel: var(--color-paper);
+  --color-paper-2: oklch(95.213% 0.01457 106.673);
+  --color-paper-3: oklch(88.81% 0.0202 103.702);
+  --color-ink: oklch(22.184% 0.02084 156.359);
+  --color-ink-2: oklch(38.488% 0.02669 153.232);
+  --color-muted: oklch(48.338% 0.02738 131.444);
+  --color-rule: oklch(82.518% 0.02233 118.305);
+  --color-rule-2: oklch(43.264% 0.03 143.263);
+  --color-accent: oklch(91.079% 0.17044 117.496);
+  --color-accent-ink: var(--color-ink);
+  --color-focus: var(--color-ink);
+  --color-rail: oklch(22.567% 0.02065 162.45);
+  --color-rail-soft: oklch(30% 0.025 155);
+  --color-rail-ink: var(--color-paper);
+  --color-rail-muted: oklch(83% 0.02 135);
+  --font-display: var(--font-yorimichi, "Rethink Sans"), Arial, sans-serif;
   --font-body: var(--font-display);
-  --radius-card: 0;
-  --radius-pill: 0;
+  --radius-card: 18px;
+  --radius-media: 12px;
+  --radius-control: 12px;
+  --radius-frame: 24px;
+  --radius-pill: 999px;
   --shadow-card: none;
-  --tracking-display: -0.025em;
+  --shadow-frame: 0 20px 55px
+    color-mix(in oklab, var(--color-ink) 12%, transparent);
+  --tracking-display: -0.035em;
 }
 :root {
   color-scheme: light;
@@ -68,7 +76,7 @@
   --z-tooltip: 600;
   --rule-hair: 1px;
   --rule-heavy: 1px;
-  --display-weight: 600;
+  --display-weight: 700;
 }
 @media (max-width: 60rem) {
   :root {

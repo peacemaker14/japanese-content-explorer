@@ -1,5 +1,22 @@
 [
  {
+  "scope": "app",
+  "shape": "app screen",
+  "theme": "custom",
+  "axes": "light/grotesk-heavy/chromatic-yellowgreen",
+  "nav": "forest category rail and native mobile menu",
+  "footer": "existing legal links and privacy reset",
+  "imagery": "actual official YouTube category covers and video thumbnails",
+  "signature": "category-first Japanese immersion and honest video workspace",
+  "sections": ["category portal", "interest mix", "URL-backed catalog", "native video workspace"],
+  "waived": [],
+  "answered": ["F7: reference-derived metadata capsules", "F24: outlined and softly elevated outer frame only"],
+  "prompt": "Owner-requested Yorimichi rename and supplied forest/lime/ivory study-workspace reference; preserve all real functionality without copied course material or fake study controls",
+  "review": "Fresh-context image review accepted workspace; mobile hierarchy and empty-category material findings corrected",
+  "verification": "79 direct-Neon tests; actual responsive UI and native content playback; keyboard menu and current-page focus restoration; kept 25 links, 9 fields, 4 handlers and 1 heading",
+  "mode": "full redesign"
+ },
+ {
   "mode": "redesign",
   "depth": "restyle",
   "scope": "app",
