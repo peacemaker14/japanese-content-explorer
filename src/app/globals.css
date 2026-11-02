@@ -407,6 +407,25 @@ select {
   color: var(--color-ink);
   font-size: var(--text-md);
 }
+.select-control {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.select-control select {
+  display: block;
+  appearance: none;
+  padding-inline-end: calc(var(--space-lg) + var(--space-xs));
+}
+.select-chevron {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: var(--space-sm);
+  width: var(--space-md);
+  height: var(--space-md);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
 input[aria-invalid="true"] {
   border-color: var(--color-error);
 }
@@ -1151,6 +1170,7 @@ input[aria-invalid="true"] {
     padding: var(--space-sm);
   }
   .search-row {
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-sm);
   }
   .explore-heading {

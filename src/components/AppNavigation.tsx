@@ -29,13 +29,6 @@ const utilityPaths: Record<string, React.ReactNode> = {
       <rect x="14" y="14" width="7" height="7" rx="1" />
     </>
   ),
-  mix: (
-    <>
-      <path d="M4 7h9m4 0h3M4 17h3m4 0h9" />
-      <circle cx="15" cy="7" r="2" />
-      <circle cx="9" cy="17" r="2" />
-    </>
-  ),
 };
 
 function UtilityIcon({ name }: { name: string }) {
@@ -77,7 +70,7 @@ function NavigationContent({
         className="rail-link"
         href="/explore"
         aria-current={
-          pathname === "/explore" && filters.interests.length === 0
+          pathname === "/explore" && filters.interests.length !== 1
             ? "page"
             : undefined
         }
@@ -109,10 +102,6 @@ function NavigationContent({
           <span>{shortNames[category.slug]}</span>
         </Link>
       ))}
-      <Link className="rail-link" href="/#mix-interests">
-        <UtilityIcon name="mix" />
-        <span>Mix interests</span>
-      </Link>
     </>
   );
   return (

@@ -5,6 +5,29 @@ import type {
 } from "@/lib/catalog-types";
 import { difficultyLabels, difficultyValues } from "@/lib/difficulty";
 
+function NativeSelect(props: React.ComponentProps<"select">) {
+  return (
+    <span className="select-control">
+      <select {...props} />
+      <svg
+        className="select-chevron"
+        aria-hidden="true"
+        focusable="false"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m4 6 4 4 4-4" />
+      </svg>
+    </span>
+  );
+}
+
 export function CatalogFilterForm({
   filters,
   interests,
@@ -31,7 +54,7 @@ export function CatalogFilterForm({
         </label>
         <label className="difficulty-field" htmlFor="catalog-difficulty">
           Learning difficulty
-          <select
+          <NativeSelect
             name="difficulty"
             id="catalog-difficulty"
             defaultValue={filters.difficulty}
@@ -46,18 +69,22 @@ export function CatalogFilterForm({
                 </option>
               ))}
             <option value="unassessed">Not assessed</option>
-          </select>
+          </NativeSelect>
         </label>
         <label htmlFor="catalog-sort">
           Sort by
-          <select name="sort" id="catalog-sort" defaultValue={filters.sort}>
+          <NativeSelect
+            name="sort"
+            id="catalog-sort"
+            defaultValue={filters.sort}
+          >
             <option value="newest">Newest</option>
             <option value="popular">Most viewed</option>
-          </select>
+          </NativeSelect>
         </label>
         <label htmlFor="catalog-duration">
           Duration
-          <select
+          <NativeSelect
             name="duration"
             id="catalog-duration"
             defaultValue={filters.duration}
@@ -65,7 +92,7 @@ export function CatalogFilterForm({
             <option value="all">Any duration</option>
             <option value="under-10">Under 10 min</option>
             <option value="10-plus">10+ min</option>
-          </select>
+          </NativeSelect>
         </label>
       </div>
       <p className="helper" id="difficulty-help">

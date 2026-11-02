@@ -11,7 +11,6 @@ import { CatalogFilterForm } from "@/components/CatalogFilterForm";
 import { CatalogPagination } from "@/components/CatalogPagination";
 import { VideoCard } from "@/components/VideoCard";
 import {
-  CategoryBrowser,
   CategoryNavigation,
   CategorySubtopics,
 } from "@/components/CategoryBrowser";
@@ -19,7 +18,7 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const metadata: Metadata = {
-  title: "Find Japanese immersion material",
+  title: "Browse Japanese videos",
   alternates: { canonical: "/explore" },
 };
 
@@ -56,13 +55,6 @@ export default async function ExplorePage({
     filters.interests.length === 1
       ? categories.find((category) => category.slug === filters.interests[0])
       : undefined;
-  const browsingCategories =
-    filters.interests.length === 0 &&
-    filters.subtopics.length === 0 &&
-    filters.page === 1 &&
-    !filters.q &&
-    filters.difficulty === "all" &&
-    filters.duration === "all";
   const clearHref = catalogUrl(
     parseCatalogFilters({ interest: filters.interests }),
   );
@@ -85,7 +77,7 @@ export default async function ExplorePage({
           {activeCategory?.name ??
             (filters.interests.length > 1
               ? "Your immersion mix"
-              : "Japanese immersion")}
+              : "All videos")}
         </h1>
         <p className="result-count">
           {result.total.toLocaleString("en-US")}{" "}
@@ -95,31 +87,23 @@ export default async function ExplorePage({
       {activeCategory && (
         <p className="category-context">{activeCategory.description}</p>
       )}
-      {!browsingCategories && (
-        <CategoryNavigation categories={categories} filters={filters} />
-      )}
-      {browsingCategories && (
-        <CategoryBrowser categories={categories} filters={filters} />
-      )}
+      <CategoryNavigation categories={categories} filters={filters} />
       {activeCategory && (
         <CategorySubtopics category={activeCategory} filters={filters} />
       )}
-      {activeCategory ? (
-        <details
-          className="category-refinements"
-          open={
-            Boolean(filters.q) ||
-            filters.difficulty !== "all" ||
-            filters.duration !== "all" ||
-            filters.sort !== "newest"
-          }
-        >
-          <summary>Filter videos</summary>
-          {filterForm}
-        </details>
-      ) : (
-        filterForm
-      )}
+      <details
+        className="category-refinements"
+        open={
+          Boolean(filters.q) ||
+          filters.interests.length > 1 ||
+          filters.difficulty !== "all" ||
+          filters.duration !== "all" ||
+          filters.sort !== "newest"
+        }
+      >
+        <summary>Filter videos</summary>
+        {filterForm}
+      </details>
       {result.items.length > 0 ? (
         <div className="video-grid">
           {result.items.map((video) => (
