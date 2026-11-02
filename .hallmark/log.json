@@ -1,0 +1,21 @@
+[
+ {
+  "scope": "app",
+  "shape": "app screen",
+  "theme": "editorial",
+  "axes": "light/display-condensed/chromatic-green",
+  "nav": "wordmark and Explore / Choose interests",
+  "footer": "inline legal and privacy reset",
+  "imagery": "official YouTube thumbnails only",
+  "signature": "native video-thumbnail catalog",
+  "sections": [
+   "interest picker",
+   "URL-backed catalog",
+   "video detail"
+  ],
+  "waived": [],
+  "prompt": "Japanese video discovery by five hobbies; editorial app screens; actual metadata, no invented difficulty",
+  "date": "2026-11-02",
+  "mode": "build"
+ }
+]
