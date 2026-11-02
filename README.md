@@ -77,6 +77,19 @@ Public visibility requires published status, current embeddable metadata, Japane
 
 The latest Hallmark redesign supersedes the earlier HENNGE restyle: sampled ivory `#f3f0e6`, paper `#fcfcf5`, forest `#131f19`, lime `#d9f05e`, self-hosted Rethink Sans and Japanese-capable system sans. A desktop category rail becomes a native mobile menu; the detail workspace places the native player beside real metadata, not invented quizzes or study notes. Empty categories have no fake thumbnail slots. Mobile category/subtopic rails scroll within the page. Existing routes, consent boundaries, preference keys, source links, visible focus and reduced-motion support remain. Repository/domain identifiers are intentionally unchanged.
 
+## Local Whisper transcription
+
+The owner's later request adds a separate private operator workflow, not a public transcript endpoint. `scripts/transcribe-local.py` reuses Tombo's installed **mlx-whisper 0.4.3**, **yt-dlp 2026.8.19**, existing ffmpeg/ffprobe and its already-cached `mlx-community/whisper-large-v3-turbo` revision `a4aaeec0636e6fef84abdcbe3544cb2bf7e9f6fb`. It never imports Tombo application code, reads its database/environment/transcripts, or installs another model. Inference is local with the Hugging Face hub forced offline; only audio acquisition contacts YouTube.
+
+```sh
+/Users/bayu/nightgig/tombo/server/.venv/bin/python scripts/transcribe-local.py \
+  --manifest .local/production-published-reviewed.json
+```
+
+The input is the current 361-publication snapshot. Optional `--only YOUTUBE_ID` exercises one actual published video. Output defaults to ignored `.local/transcripts/`: one timestamped JSON and WebVTT file per video, plus `batch.json` with every ID's actual status and counts. Finished matching transcripts resume without downloading or inference again. Temporary audio and downloader metadata are deleted after each attempt. Re-running is an explicit retry of failed/pending records; no hidden retries, browser-cookie extraction or access bypass occurs. A YouTube bot challenge stops the run and leaves remaining entries visibly pending.
+
+JSON includes word timings, model provenance, `machineGenerated: true` and `humanReviewed: false`; WebVTT identifies its machine-generated origin. Japanese is a requested decoding language, not detected-language verification. Empty model results are labeled `no_speech_detected`, never invented text. Outputs can contain recognition errors or hallucinations; they never change publication, language evidence or difficulty. Keep them private unless you have the necessary publication rights. No transcripts/audio enter Git or the public website.
+
 ## Metadata retention and deployment
 
 ```sh
@@ -97,6 +110,7 @@ For Vercel, set Node 22 and production `DATABASE_URL`, `YOUTUBE_API_KEY`, `CRON_
 npm run typecheck
 npm run test                         # pure checks; DB suites skip without explicit test access
 TEST_DATABASE_URL='DIRECT_TEST_BRANCH_URL' npm run test
+python3 -m unittest discover -s scripts -p test_transcribe_local.py
 npm run build
 npm run start
 ```
@@ -125,6 +139,8 @@ Behavioral coverage includes normalization boundaries and exact bigints, retry/d
 - Yorimichi's nine home/category/detail combinations at 360px, 390px and 1280px had no page overflow. Native iframes measured 294×200 and 324×200 on phones. Actual content playback advanced from paused/time 0 to 1.010215 seconds, readyState 4, duration 621.761, without an ad. Keyboard opening pushed content down rather than overlaying it; current-page navigation closed the menu and restored summary focus. The real creator-description disclosure exposed 4,562 characters including its summary.
 - Fresh-context image review accepted the video workspace and found mobile hierarchy and misleading empty thumbnail slots; both were corrected. Hallmark's kept-wiring sweep retained 25/25 links, 9/9 fields, 4/4 handlers and 1/1 headings. Its two Finish findings are explicitly answered: reference-derived metadata capsules and the outlined/shadowed outer frame. Consent-only automated renders remain separate from actual consented browser proof.
 - Corrected mobile category views now lead with their heading at y=102px and the first video at y=472.39px at both 360px and 390px. Scroll rails contain their screen-reader labels; document width matches viewport width. Corrected empty categories render five real category links, zero images/iframes and zero pretend thumbnail slots. The new-font acknowledgment page had zero media and only first-party requests before acknowledgment.
+- Local Whisper proof used the real cooking video's entire 621.761-second audio and the existing cached model. Its 105 raw records contained five empty zero-duration decoder records; normalization now omits empty records before validating spoken cue timestamps, preserving every recognized character. The resulting JSON and VTT contain 100 spoken cues, and ffprobe parsed all 100 WebVTT packets. Five offline regression tests passed. An isolated real-output resume completed with `PATH=/nonexistent`, proving that completed transcripts need neither downloading nor media tools again. The full 361-ID batch's actual coverage is recorded in private `.local/transcripts/batch.json`; the target size is not a completion claim.
+- The deployed Yorimichi HTML/client audit checked two actual HTML responses and ten first-party script responses; none contained configured production credential values.
 
 
 ### Deployment and remaining operator prerequisites
@@ -132,7 +148,7 @@ Behavioral coverage includes normalization boundaries and exact bigints, retry/d
 - Source: https://github.com/peacemaker14/japanese-content-explorer . Public app: https://japanese-content-explorer-p14.vercel.app . Local runtime uses Neon development; tests use a separate direct test branch.
 - Production contains **361 published videos, 160 held candidates and 0 hidden**: Cars & Driving 82, Fitness & Movement 68, Gaming 80, Food & Cooking 77, Travel & Culture 54. The 200-total/~40-per-interest targets are met. Channel variety remains imperfect: 19 channel/category groups exceed the preferred three, with a largest group of 17; this is not a hard publication cap. Development remains separate.
 - Original owner approvals remain in `.local/approved-production-first-five.json`. All 516 subsequent decisions are in `.local/assistant-reviewed-production-decisions.json`; `.local/assistant-review-outcomes.json` records rationale and second-pass adjustments. Held reasons overlap: 49 non-Japanese audio tags, 87 missing audio tags, 30 uncertain language content, 9 outside categories, 4 nonverbal and 1 uncertain category. Never describe metadata-only judgments as listening verification.
-- Vercel's personal `p14` Hobby deployment and separate Production/Preview credentials are configured. No direct migration URL was supplied to Vercel. The original public immersion/difficulty deployment was browser-verified; the new Yorimichi release is verified separately after publication.
+- Vercel's personal `p14` Hobby deployment and separate Production/Preview credentials are configured; no direct migration URL was supplied. Yorimichi release `44cfba8` deployed successfully. The actual canonical public site showed the new title/font, all five correct category counts and Gaming's 80 videos; the 390px public category view had matching document/viewport width and its first video at y=472.39px.
 - The live maintenance endpoint returned 401 without authorization and 200 with a count-only success response using the configured secret. A new successful production refresh row completed after the request's database-clock baseline, with matching response counts and no error. No rows were due, so this invocation made no YouTube requests.
 - The cron schedule is committed in `vercel.json`. Dashboard confirmation of active scheduling and failure-notification settings remains unverified: the authenticated browser relay disconnected and the CLI is logged out. No scheduled execution or alert configuration is claimed. Until those operational checks are completed, local maintenance remains available with `node --env-file=.local/production.env node_modules/tsx/dist/cli.mjs scripts/refresh-metadata.ts`.
 - Disposable PostgreSQL/browser fixtures and render captures were removed after proof; real private review exports and operator environment files are retained. Delete API-bearing exports before 30 days. No Tombo application files were changed.

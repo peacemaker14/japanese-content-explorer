@@ -5,8 +5,8 @@ export default function Privacy() {
     <article className="legal opens">
       <h1>Privacy policy</h1>
       <p>
-        Yorimichi is a public Japanese immersion catalog. There are no accounts,
-        transcripts, media downloads or playback analytics.
+        Yorimichi is a public Japanese immersion catalog. The website offers no
+        accounts, transcript uploads, media downloads or playback analytics.
       </p>
       <h2>Stored in your browser</h2>
       <p>

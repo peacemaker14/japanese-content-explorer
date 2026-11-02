@@ -40,6 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Local Python transcription bytecode
+__pycache__/
+*.py[cod]
+
 # Local curator exports and credentials must never be published.
 /.local/
 !.env.example
