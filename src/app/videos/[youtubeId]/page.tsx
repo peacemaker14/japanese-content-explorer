@@ -7,6 +7,7 @@ import { validateReturnTo } from "@/lib/catalog-filters";
 import { youtubeIdPattern } from "@/lib/taxonomy";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { formatDuration } from "@/components/VideoCard";
+import { difficultyLabels, difficultyGuidance } from "@/lib/difficulty";
 
 type DetailProps = {
   params: Promise<{ youtubeId: string }>;
@@ -31,7 +32,7 @@ export async function generateMetadata({
   return {
     title: video.title,
     alternates: { canonical: `/videos/${video.youtubeId}` },
-    description: `Watch ${video.channelTitle} on YouTube. Discover more Japanese videos about your interests.`,
+    description: `Japanese immersion with ${video.channelTitle}. Explore videos by interest and learning difficulty.`,
   };
 }
 
@@ -150,8 +151,16 @@ export default async function VideoDetailPage({
               </div>
             ) : null}
             <div>
-              <dt>Difficulty</dt>
-              <dd>Not assessed</dd>
+              <dt>Learning difficulty</dt>
+              <dd>
+                {difficultyLabels[video.difficulty]}
+                <p className="helper">
+                  {difficultyGuidance[video.difficulty]}
+                  {video.difficulty !== "unassessed"
+                    ? " Curator-rated; not a JLPT level."
+                    : ""}
+                </p>
+              </dd>
             </div>
             {video.format ? (
               <div>

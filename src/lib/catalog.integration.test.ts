@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import { hasTestDatabase, withTestDatabase } from "../../tests/database";
 import { getVideo, listInterests, listVideos } from "./catalog-core";
 import { parseCatalogFilters } from "./catalog-filters";
+import type { Difficulty } from "./difficulty";
 
 async function fixture(
   pool: Pool,
@@ -17,14 +18,15 @@ async function fixture(
     subtopic?: string;
     manual?: boolean;
     embeddable?: boolean;
+    difficulty?: Difficulty;
   } = {},
 ) {
   const youtubeId = `v${String(n).padStart(10, "0")}`;
   const {
     rows: [row],
   } = await pool.query(
-    `INSERT INTO videos (youtube_id,title,description,channel_id,channel_title,published_at,duration_seconds,view_count,status,embeddable,metadata_updated_at,default_audio_language,language_status,made_for_kids)
-    VALUES ($1,$2,'Description','channel','Channel','2026-01-01', $3,$4,$5,$6,now()-($7::integer * interval '1 day'),'ja','likely_ja',false) RETURNING id`,
+    `INSERT INTO videos (youtube_id,title,description,channel_id,channel_title,published_at,duration_seconds,view_count,status,embeddable,metadata_updated_at,default_audio_language,language_status,made_for_kids,difficulty)
+    VALUES ($1,$2,'Description','channel','Channel','2026-01-01', $3,$4,$5,$6,now()-($7::integer * interval '1 day'),'ja','likely_ja',false,$8) RETURNING id`,
     [
       youtubeId,
       options.title ?? `Video ${n}`,
@@ -33,6 +35,7 @@ async function fixture(
       options.status ?? "published",
       options.embeddable ?? true,
       options.age ?? 0,
+      options.difficulty ?? "unassessed",
     ],
   );
   for (const slug of options.interests ?? ["gaming"])
@@ -178,6 +181,63 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
         totalPages: 0,
         items: [],
       });
+    });
+  });
+  it("filters assessed and unassessed language difficulty without losing counts or other facets", async () => {
+    await withTestDatabase(async (pool) => {
+      for (let n = 1; n <= 21; n++)
+        await fixture(pool, n, {
+          difficulty: "beginner",
+          interests: ["gaming", "food-cooking"],
+          subtopic: "gaming/reviews",
+        });
+      await fixture(pool, 22, { difficulty: "intermediate" });
+      await fixture(pool, 23, { difficulty: "advanced" });
+      await fixture(pool, 24, { difficulty: "unassessed" });
+      await fixture(pool, 25, { difficulty: "beginner", status: "candidate" });
+      expect((await listVideos(parseCatalogFilters({}), pool)).total).toBe(24);
+      const first = await listVideos(
+        parseCatalogFilters({
+          difficulty: "beginner",
+          interest: "food-cooking",
+          subtopic: "gaming/reviews",
+          duration: "10-plus",
+          q: "Video",
+        }),
+        pool,
+      );
+      expect(first).toMatchObject({ total: 21, page: 1, totalPages: 2 });
+      expect(first.items.map((v) => v.difficulty)).toEqual(
+        Array(20).fill("beginner"),
+      );
+      const second = await listVideos(
+        parseCatalogFilters({ difficulty: "beginner", page: "2" }),
+        pool,
+      );
+      expect(second.items.map((v) => v.youtubeId)).toEqual(["v0000000021"]);
+      for (const [difficulty, id] of [
+        ["intermediate", "v0000000022"],
+        ["advanced", "v0000000023"],
+        ["unassessed", "v0000000024"],
+      ] as const) {
+        const result = await listVideos(
+          parseCatalogFilters({ difficulty }),
+          pool,
+        );
+        expect(result.items.map((v) => v.youtubeId)).toEqual([id]);
+        expect(await getVideo(id, pool)).toMatchObject({ difficulty });
+      }
+      expect(
+        (
+          await listVideos(
+            parseCatalogFilters({
+              difficulty: "intermediate",
+              interest: "food-cooking",
+            }),
+            pool,
+          )
+        ).total,
+      ).toBe(0);
     });
   });
   it("withdraws visibility when refreshed metadata no longer supports Japanese", async () => {

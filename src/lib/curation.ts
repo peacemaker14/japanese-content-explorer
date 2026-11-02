@@ -2,6 +2,7 @@ import type { Pool } from "pg";
 import { z } from "zod";
 import { getPool } from "../db/client";
 import { taxonomy, youtubeIdPattern } from "./taxonomy";
+import { difficultyValues } from "./difficulty";
 
 const decisionSchema = z.object({
   youtubeId: z.string().regex(youtubeIdPattern),
@@ -22,6 +23,7 @@ const decisionSchema = z.object({
     .enum(["review", "tutorial", "vlog", "interview", "other"])
     .nullable(),
   languageStatus: z.enum(["unverified", "likely_ja", "verified_ja"]),
+  difficulty: z.enum(difficultyValues),
   reviewNote: z
     .string()
     .trim()
@@ -146,13 +148,14 @@ export async function applyCuration(
           [video.id, decision.subtopics.map((slug) => subtopicIds.get(slug)!)],
         );
       await client.query(
-        `UPDATE videos SET status=$2, format=$3, language_status=$4, review_note=$5, reviewed_at=now() WHERE id=$1`,
+        `UPDATE videos SET status=$2, format=$3, language_status=$4, review_note=$5, difficulty=$6, reviewed_at=now() WHERE id=$1`,
         [
           video.id,
           decision.status,
           decision.format,
           decision.languageStatus,
           decision.reviewNote,
+          decision.difficulty,
         ],
       );
     }
@@ -175,7 +178,7 @@ export async function exportCuration(
     `SELECT v.youtube_id AS "youtubeId", v.status,
     COALESCE((SELECT json_agg(i.slug ORDER BY i.slug) FROM video_interests vi JOIN interests i ON i.id=vi.interest_id WHERE vi.video_id=v.id AND vi.reviewed=true AND vi.source='manual'), '[]'::json) AS interests,
     COALESCE((SELECT json_agg(i.slug || '/' || s.slug ORDER BY i.slug,s.slug) FROM video_subtopics vs JOIN subtopics s ON s.id=vs.subtopic_id JOIN interests i ON i.id=s.interest_id WHERE vs.video_id=v.id), '[]'::json) AS subtopics,
-    v.format, v.language_status AS "languageStatus", COALESCE(v.review_note,'') AS "reviewNote",
+    v.format, v.difficulty, v.language_status AS "languageStatus", COALESCE(v.review_note,'') AS "reviewNote",
     json_build_object('title',v.title,'channel',v.channel_title,'watchUrl','https://www.youtube.com/watch?v=' || v.youtube_id,
       'durationSeconds',v.duration_seconds,'defaultAudioLanguage',v.default_audio_language,
       'madeForKids',v.made_for_kids,'embeddable',v.embeddable,'metadataUpdatedAt',v.metadata_updated_at,

@@ -17,7 +17,7 @@ export const publicVideoPredicate = `v.status = 'published' AND v.embeddable = t
   AND EXISTS (SELECT 1 FROM video_interests pvi WHERE pvi.video_id = v.id AND pvi.reviewed = true AND pvi.source = 'manual')`;
 const cardColumns = `v.youtube_id AS "youtubeId", v.title, v.channel_title AS "channelTitle",
  v.thumbnail_url AS "thumbnailUrl", v.published_at AS "publishedAt", v.duration_seconds AS "durationSeconds",
- v.view_count::text AS "viewCount",
+ v.view_count::text AS "viewCount", v.difficulty,
  COALESCE((SELECT json_agg(json_build_object('slug', i.slug, 'name', i.name) ORDER BY i.slug)
  FROM video_interests vi JOIN interests i ON i.id = vi.interest_id
  WHERE vi.video_id = v.id AND vi.reviewed = true AND vi.source = 'manual'), '[]'::json) AS interests`;
@@ -51,6 +51,8 @@ function predicate(filters: CatalogFilters): {
   }
   if (filters.duration === "under-10") clauses.push("v.duration_seconds < 600");
   if (filters.duration === "10-plus") clauses.push("v.duration_seconds >= 600");
+  if (filters.difficulty !== "all")
+    clauses.push(`v.difficulty = ${bind(filters.difficulty)}::difficulty`);
   return { sql: clauses.join(" AND "), values };
 }
 export async function listVideos(

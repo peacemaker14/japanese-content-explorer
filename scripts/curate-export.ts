@@ -27,7 +27,7 @@ async function main() {
   });
   console.log(JSON.stringify({ exported: entries.length }));
   console.error(
-    "Keep this review export private and delete it before 30 days. verified_ja requires your actual observation of Japanese speech or substantive on-video text, documented in reviewNote.",
+    "Keep this review export private and delete it before 30 days. verified_ja requires actual observation of Japanese speech or substantive on-video text. Rate difficulty only after reviewing the language; otherwise keep unassessed. Document the assessment in reviewNote; these are not JLPT levels.",
   );
 }
 main()

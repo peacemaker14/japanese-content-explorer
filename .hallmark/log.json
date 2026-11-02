@@ -1,5 +1,26 @@
 [
  {
+  "mode": "redesign",
+  "depth": "restyle",
+  "scope": "app",
+  "shape": "app screen",
+  "theme": "HENNGE-inspired neutrals",
+  "axes": "light/system-sans/charcoal",
+  "nav": "wordmark and Explore / Choose interests",
+  "footer": "inline legal links and privacy reset",
+  "imagery": "official YouTube thumbnails only",
+  "signature": "Japanese immersion catalog with curator-rated difficulty",
+  "sections": [
+   "interest picker",
+   "difficulty-filtered catalog",
+   "video detail"
+  ],
+  "waived": [],
+  "prompt": "Japanese immersion learning; user-requested HENNGE #f8f8f8 background and Helvetica Neue / Arial type; preserve routes and safeguards",
+  "verification": "78 tests; production build; actual responsive browser proof; Hallmark 0 FAIL and 0 WARN, with consent-render limitation documented",
+  "date": "2026-11-02"
+ },
+ {
   "scope": "app",
   "shape": "app screen",
   "theme": "editorial",

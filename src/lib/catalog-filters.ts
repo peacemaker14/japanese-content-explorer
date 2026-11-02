@@ -1,5 +1,6 @@
 import { taxonomy } from "./taxonomy";
 import type { CatalogFilters } from "./catalog-types";
+import { difficultyValues, type DifficultyFilter } from "./difficulty";
 export type { CatalogFilters } from "./catalog-types";
 
 export class CatalogFilterError extends Error {
@@ -41,6 +42,12 @@ export function parseCatalogFilters(raw: RawFilters): CatalogFilters {
   const duration = scalar(raw, "duration") ?? "all";
   if (duration !== "all" && duration !== "under-10" && duration !== "10-plus")
     throw new CatalogFilterError("Unknown duration filter.");
+  const difficulty = scalar(raw, "difficulty") ?? "all";
+  if (
+    difficulty !== "all" &&
+    !difficultyValues.some((value) => value === difficulty)
+  )
+    throw new CatalogFilterError("Unknown difficulty filter.");
   const rawPage = scalar(raw, "page") ?? "1";
   const page = Number(rawPage);
   if (!/^[1-9]\d*$/.test(rawPage) || !Number.isSafeInteger(page))
@@ -51,6 +58,7 @@ export function parseCatalogFilters(raw: RawFilters): CatalogFilters {
     q,
     sort,
     duration,
+    difficulty: difficulty as DifficultyFilter,
     page,
   };
 }
@@ -64,6 +72,7 @@ export function catalogUrl(
   if (filters.q) query.set("q", filters.q);
   if (filters.sort !== "newest") query.set("sort", filters.sort);
   if (filters.duration !== "all") query.set("duration", filters.duration);
+  if (filters.difficulty !== "all") query.set("difficulty", filters.difficulty);
   if (page !== 1) query.set("page", String(page));
   const suffix = query.toString();
   return `/explore${suffix ? `?${suffix}` : ""}`;

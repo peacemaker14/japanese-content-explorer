@@ -1,9 +1,12 @@
+import type { Difficulty, DifficultyFilter } from "./difficulty";
+
 export type CatalogFilters = {
   interests: string[];
   subtopics: string[];
   q: string;
   sort: "newest" | "popular";
   duration: "all" | "under-10" | "10-plus";
+  difficulty: DifficultyFilter;
   page: number;
 };
 export type TopicLabel = { slug: string; name: string };
@@ -19,6 +22,7 @@ export type VideoCardData = {
   publishedAt: string;
   durationSeconds: number;
   viewCount: string | null;
+  difficulty: Difficulty;
   interests: TopicLabel[];
 };
 export type VideoDetailData = VideoCardData & {

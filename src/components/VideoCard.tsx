@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { VideoCardData } from "@/lib/catalog-types";
 import { VideoThumbnail } from "@/components/VideoThumbnail";
+import { difficultyLabels } from "@/lib/difficulty";
 
 export function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -34,6 +35,9 @@ export function VideoCard({
         </span>
         <span>From YouTube</span>
       </div>
+      <p className="video-difficulty" aria-label="Learning difficulty">
+        {difficultyLabels[video.difficulty]}
+      </p>
       <ul className="topic-list" aria-label="Reviewed interests">
         {video.interests.map((interest) => (
           <li key={interest.slug}>{interest.name}</li>

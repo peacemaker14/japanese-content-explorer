@@ -18,7 +18,7 @@ async function main() {
 main()
   .catch(() => {
     console.error(
-      "Curation apply failed; no decisions were applied. Check file IDs, taxonomy, evidence notes, current Japanese audio metadata, and publication eligibility. Exports must be younger than 29 days.",
+      "Curation apply failed; no decisions were applied. Check required fields (including difficulty: unassessed, beginner, intermediate or advanced), file IDs, taxonomy, evidence notes, current Japanese audio metadata, and publication eligibility. Exports must be younger than 29 days.",
     );
     process.exitCode = 1;
   })

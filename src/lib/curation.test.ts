@@ -18,6 +18,7 @@ function decision(overrides: Partial<CurationDecision> = {}): CurationDecision {
     subtopics: ["gaming/reviews"],
     format: "review",
     languageStatus: "verified_ja",
+    difficulty: "unassessed",
     reviewNote:
       "I watched the introduction and heard the presenter speaking Japanese.",
     ...overrides,
@@ -42,33 +43,14 @@ describe("curation validation", () => {
     { ...decision(), format: "lesson" },
     { ...decision(), youtubeId: "" },
     { ...decision(), languageStatus: "japanese-title" },
+    { ...decision(), difficulty: "fluent" },
   ])("rejects invalid decisions %j", (entry) => {
     expect(() => validateCuration([entry])).toThrow();
   });
-  it("rejects duplicate IDs and preserves editable fields only", () => {
+  it("rejects duplicate IDs", () => {
     expect(() => validateCuration([decision(), decision()])).toThrow(
       "Duplicate video ID",
     );
-    expect(
-      validateCuration([
-        {
-          ...decision(),
-          title: "do not write this",
-          difficulty: "beginner",
-          context: { title: "no" },
-        },
-      ]),
-    ).toEqual([decision()]);
-    expect(
-      validateCuration([
-        decision({
-          status: "candidate",
-          languageStatus: "unverified",
-          interests: [],
-          subtopics: [],
-        }),
-      ]),
-    ).toHaveLength(1);
   });
 });
 describe.skipIf(!hasTestDatabase)("atomic database curation", () => {
@@ -146,7 +128,6 @@ describe.skipIf(!hasTestDatabase)("atomic database curation", () => {
           ...decision(),
           context: { title: "Tampered" },
           title: "Tampered",
-          difficulty: "beginner",
         },
       ];
       expect(await applyCuration(input, pool)).toEqual({ applied: 1 });
@@ -161,9 +142,9 @@ describe.skipIf(!hasTestDatabase)("atomic database curation", () => {
         (await pool.query("SELECT source,reviewed FROM video_interests"))
           .rows[0],
       ).toEqual({ source: "manual", reviewed: true });
-      expect(
-        (await pool.query("SELECT title,difficulty FROM videos")).rows[0],
-      ).toEqual({ title: "Original title", difficulty: "unassessed" });
+      expect((await pool.query("SELECT title FROM videos")).rows[0]).toEqual({
+        title: "Original title",
+      });
       expect((await listVideos(parseCatalogFilters({}), pool)).total).toBe(1);
       expect(await getVideo("abcdefghijk", pool)).not.toBeNull();
       const exported = (await exportCuration(
@@ -184,6 +165,60 @@ describe.skipIf(!hasTestDatabase)("atomic database curation", () => {
       await applyCuration([decision({ status: "hidden" })], pool);
       expect((await listVideos(parseCatalogFilters({}), pool)).total).toBe(0);
       expect(await getVideo("abcdefghijk", pool)).toBeNull();
+    });
+  });
+  it("applies difficulty assessments atomically and can withdraw them without unpublishing", async () => {
+    await withTestDatabase(async (pool) => {
+      await video(pool);
+      await video(pool, "zzzzzzzzzzz");
+      await expect(
+        applyCuration(
+          [
+            decision({ difficulty: "beginner" }),
+            { ...decision({ youtubeId: "zzzzzzzzzzz" }), difficulty: "fluent" },
+          ],
+          pool,
+        ),
+      ).rejects.toThrow();
+      expect(
+        (await pool.query("SELECT DISTINCT difficulty,status FROM videos"))
+          .rows,
+      ).toEqual([{ difficulty: "unassessed", status: "candidate" }]);
+      const missing: Partial<CurationDecision> = decision();
+      delete missing.difficulty;
+      await expect(applyCuration([missing], pool)).rejects.toThrow();
+      await applyCuration([decision({ difficulty: "intermediate" })], pool);
+      expect(await getVideo("abcdefghijk", pool)).toMatchObject({
+        difficulty: "intermediate",
+      });
+      expect((await exportCuration("published", pool))[0]).toMatchObject({
+        difficulty: "intermediate",
+      });
+      expect(
+        (
+          await listVideos(
+            parseCatalogFilters({ difficulty: "intermediate" }),
+            pool,
+          )
+        ).items.map((v) => v.youtubeId),
+      ).toEqual(["abcdefghijk"]);
+      await applyCuration([decision({ difficulty: "unassessed" })], pool);
+      expect(
+        (
+          await listVideos(
+            parseCatalogFilters({ difficulty: "intermediate" }),
+            pool,
+          )
+        ).total,
+      ).toBe(0);
+      expect(
+        (
+          await listVideos(
+            parseCatalogFilters({ difficulty: "unassessed" }),
+            pool,
+          )
+        ).items.map((v) => v.youtubeId),
+      ).toEqual(["abcdefghijk"]);
     });
   });
   it("reports distinct publication totals separately from memberships and channel repetition", async () => {

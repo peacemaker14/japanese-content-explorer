@@ -11,7 +11,7 @@ export default async function Welcome({
   return (
     <section className="legal opens">
       <h1>Before you explore.</h1>
-      <p className="standfirst">Japanese videos, on your terms.</p>
+      <p className="standfirst">Learn Japanese through everyday immersion.</p>
       <p>
         Discovery uses the YouTube API. Continuing loads thumbnails from
         YouTube; opening an eligible video loads its player. Google may receive

@@ -68,6 +68,7 @@ describe.skipIf(!hasTestDatabase)(
     it("refreshes exact microsecond timestamps without changing editorial fields", async () =>
       withTestDatabase(async (pool) => {
         await insert(pool, "abcdefghijk", 8);
+        await pool.query("UPDATE videos SET difficulty='advanced'");
         await pool.query(
           "UPDATE videos SET metadata_updated_at='2026-01-01T01:02:03.123456Z'",
         );
@@ -81,13 +82,14 @@ describe.skipIf(!hasTestDatabase)(
         expect(result).toMatchObject({ updatedCount: 1, deletedCount: 0 });
         const row = (
           await pool.query(
-            "SELECT title,status,format,review_note,language_status,view_count::text FROM videos",
+            "SELECT title,status,format,difficulty,review_note,language_status,view_count::text FROM videos",
           )
         ).rows[0];
         expect(row).toEqual({
           title: "更新した日本語動画",
           status: "hidden",
           format: "review",
+          difficulty: "advanced",
           review_note: "Observed Japanese speech",
           language_status: "verified_ja",
           view_count: "9007199254740993",

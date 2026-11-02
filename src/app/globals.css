@@ -1,6 +1,6 @@
-/* Hallmark · v2.0.0 · scope: app · shape: app screen · theme: editorial (by request) · genre: editorial · posture: restrained · nav: compact wordmark and two text destinations · footer: inline privacy colophon · signature: native YouTube thumbnail catalog · imagery: official YouTube thumbnails only · copy: verbatim */
-/* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · weakest: H, long Japanese titles compete with controls; separate Japanese-safe title typography from condensed English heads. */
-/* Hallmark · dismissed 49 · .button, .btn and .text-button use nowrap; native YouTube links include a screen-reader-only new-tab label. Mobile controls were measured without overflow. */
+/* Hallmark · v2.0.0 · scope: app · shape: app screen · theme: HENNGE-inspired neutrals (by request) · genre: modern-minimal · posture: restrained · surface: absolute · nav: wordmark and two text destinations · footer: inline legal links · signature: Japanese immersion video catalog · imagery: official YouTube thumbnails only · copy: verbatim */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · weakest: H, preserve Japanese title legibility and prioritize learning difficulty in the filter row. */
+/* Hallmark · dismissed 49 · .button, .btn and .text-button use nowrap; native YouTube links include a screen-reader-only new-tab label. */
 @import "tailwindcss";
 @import "./tokens.css";
 @import "./base.css";
@@ -8,9 +8,7 @@
 :root {
   --container: 1200px;
   --gutter: 40px;
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-source-serif), ui-serif, Georgia, serif;
-  --font-ui: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-ui: var(--font-display);
   --font-japanese:
     "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP",
     system-ui, sans-serif;
@@ -19,7 +17,6 @@
 
 @theme inline {
   --font-sans: var(--font-ui);
-  --font-serif: var(--font-body);
 }
 
 html {
@@ -35,9 +32,7 @@ body {
 h1,
 h2,
 h3 {
-  font-variation-settings:
-    "wdth" 75,
-    "opsz" 96;
+  font-variation-settings: normal;
   color: var(--color-ink);
 }
 h1 {
@@ -58,9 +53,7 @@ summary,
 label,
 nav {
   font-family: var(--font-ui);
-  font-variation-settings:
-    "wdth" 100,
-    "opsz" 12;
+  font-variation-settings: normal;
 }
 button,
 select,
@@ -105,13 +98,17 @@ button:active:not(:disabled),
 .skip-link:focus {
   transform: none;
 }
+.site-header-shell {
+  background: var(--color-panel);
+  border-bottom: 1px solid var(--color-rule);
+}
 .site-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-lg);
   min-height: 88px;
-  border-bottom: var(--rule-heavy) solid var(--color-ink);
+  border-bottom: 0;
 }
 .wordmark {
   display: inline-flex;
@@ -125,7 +122,7 @@ button:active:not(:disabled),
   font-size: var(--text-2xl);
   font-weight: 800;
   letter-spacing: var(--tracking-display);
-  font-variation-settings: "wdth" 75;
+  font-variation-settings: normal;
 }
 .wordmark-name {
   font-size: var(--text-sm);
@@ -301,7 +298,7 @@ legend {
 }
 .search-row {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
   gap: var(--space-md);
 }
 .search-row > label {
@@ -324,6 +321,19 @@ select {
 }
 input[aria-invalid="true"] {
   border-color: var(--color-error);
+}
+.topic-disclosures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 var(--space-lg);
+}
+.topic-disclosures details {
+  min-width: 0;
+  max-width: 100%;
+}
+.topic-disclosures details[open] {
+  flex-basis: 100%;
 }
 .interest-filter {
   margin-top: var(--space-sm);
@@ -430,6 +440,12 @@ input[aria-invalid="true"] {
 .video-channel {
   margin-top: var(--space-xs);
   font-size: var(--text-md);
+}
+.video-difficulty {
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-top: var(--space-sm);
 }
 .video-card-meta {
   display: flex;
@@ -729,7 +745,8 @@ input[aria-invalid="true"] {
   .search-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .search-field {
+  .search-field,
+  .difficulty-field {
     grid-column: 1 / -1;
   }
   .subtopic-groups {
@@ -784,7 +801,8 @@ input[aria-invalid="true"] {
   .subtopic-groups {
     grid-template-columns: minmax(0, 1fr);
   }
-  .search-field {
+  .search-field,
+  .difficulty-field {
     grid-column: 1 / -1;
   }
   .catalog-filters {

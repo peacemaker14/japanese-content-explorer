@@ -14,7 +14,7 @@ import { VideoCard } from "@/components/VideoCard";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const metadata: Metadata = {
-  title: "Explore Japanese videos",
+  title: "Find Japanese immersion material",
   alternates: { canonical: "/explore" },
 };
 
@@ -50,7 +50,7 @@ export default async function ExplorePage({
   return (
     <section className="explore-screen">
       <div className="explore-heading">
-        <h1>Explore Japanese videos</h1>
+        <h1>Japanese immersion</h1>
         <p className="result-count">
           {result.total.toLocaleString("en-US")}{" "}
           {result.total === 1 ? "video" : "videos"} matched
@@ -74,7 +74,9 @@ export default async function ExplorePage({
       ) : (
         <div className="state-panel empty-state">
           <h2>No videos match these filters</h2>
-          <p>Try fewer interests, another title or a different duration.</p>
+          <p>
+            Try another interest or learning difficulty, or clear your filters.
+          </p>
           <Link className="button button-secondary" href="/explore">
             Clear filters
           </Link>

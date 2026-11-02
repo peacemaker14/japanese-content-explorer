@@ -16,23 +16,26 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --color-error: oklch(52% 0.19 27);
   --color-success: oklch(50% 0.12 150);
-  --color-paper: oklch(97% 0.007 86);
-  --color-paper-2: oklch(94% 0.01 86);
-  --color-paper-3: oklch(91% 0.012 84);
-  --color-ink: oklch(16% 0.012 280);
-  --color-ink-2: oklch(29% 0.011 280);
-  --color-muted: oklch(48% 0.01 75);
-  --color-rule: oklch(85% 0.009 85);
-  --color-rule-2: oklch(64% 0.01 80);
-  --color-accent: oklch(49% 0.13 152);
-  --color-accent-ink: oklch(98% 0.005 88);
-  --color-focus: oklch(52% 0.135 152);
-  --font-display: "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-body: "Source Serif 4", ui-serif, Georgia, serif;
+  --color-paper: #f8f8f8;
+  --color-panel: #ffffff;
+  --color-paper-2: #eeeeee;
+  --color-paper-3: #e0e0e0;
+  --color-ink: #222222;
+  --color-ink-2: #4f4f4f;
+  --color-muted: #4f4f4f;
+  --color-rule: #e0e0e0;
+  --color-rule-2: #adadad;
+  --color-accent: #222222;
+  --color-accent-ink: #ffffff;
+  --color-focus: #222222;
+  --font-display:
+    "Helvetica Neue", Arial, YuGothic, "Yu Gothic Medium", "Yu Gothic", Verdana,
+    Meiryo, sans-serif;
+  --font-body: var(--font-display);
   --radius-card: 0;
   --radius-pill: 0;
   --shadow-card: none;
-  --tracking-display: -0.012em;
+  --tracking-display: -0.025em;
 }
 :root {
   color-scheme: light;
@@ -64,8 +67,8 @@
   --z-toast: 500;
   --z-tooltip: 600;
   --rule-hair: 1px;
-  --rule-heavy: 4px;
-  --display-weight: 800;
+  --rule-heavy: 1px;
+  --display-weight: 600;
 }
 @media (max-width: 60rem) {
   :root {

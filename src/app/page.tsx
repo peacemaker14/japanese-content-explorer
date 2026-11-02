@@ -4,9 +4,9 @@ export default function HomePage() {
   return (
     <section className="home-screen">
       <div className="screen-heading">
-        <h1>Find Japanese videos about what you love.</h1>
+        <h1>Learn Japanese through videos you love.</h1>
         <p className="standfirst">
-          Start with your interests. Find something worth watching in Japanese.
+          Find immersion material by interest and learning difficulty.
         </p>
       </div>
       <InterestPicker />

@@ -118,7 +118,7 @@ describe.skipIf(!hasTestDatabase)("collection with isolated PostgreSQL", () => {
         [video.id],
       );
       await pool.query(
-        `UPDATE videos SET status='published', language_status='verified_ja', format='review', reviewed_at=now(),review_note='Observed Japanese speech.' WHERE id=$1`,
+        `UPDATE videos SET status='published', language_status='verified_ja', difficulty='intermediate', format='review', reviewed_at=now(),review_note='Observed Japanese speech.' WHERE id=$1`,
         [video.id],
       );
       client.videos = async (ids) => {
@@ -150,7 +150,7 @@ describe.skipIf(!hasTestDatabase)("collection with isolated PostgreSQL", () => {
         language_status: "verified_ja",
         format: "review",
         review_note: "Observed Japanese speech.",
-        difficulty: "unassessed",
+        difficulty: "intermediate",
       });
       expect(
         (

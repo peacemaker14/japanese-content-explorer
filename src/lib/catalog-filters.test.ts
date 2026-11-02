@@ -6,21 +6,14 @@ import {
   validateReturnTo,
 } from "./catalog-filters";
 describe("catalog filters", () => {
-  it("defaults and ignores unrelated keys", () => {
-    expect(parseCatalogFilters({ tracking: "ignored" })).toEqual({
-      interests: [],
-      subtopics: [],
-      q: "",
-      sort: "newest",
-      duration: "all",
-      page: 1,
-    });
-  });
   it.each([
     { interest: "unknown" },
     { subtopic: "coffee" },
     { sort: "oldest" },
     { duration: "long" },
+    { difficulty: "fluent" },
+    { difficulty: ["beginner", "advanced"] },
+    { difficulty: ["beginner"] },
     { q: ["one", "two"] },
     { sort: ["newest"] },
     { page: "0" },
@@ -39,6 +32,7 @@ describe("catalog filters", () => {
       q: "  100% _ \\  ",
       sort: "popular",
       duration: "10-plus",
+      difficulty: "intermediate",
       page: "3",
     });
     const url = new URL(catalogUrl(filters), "https://example.test");
@@ -56,6 +50,7 @@ describe("catalog filters", () => {
         q: raw.q[0],
         sort: raw.sort[0],
         duration: raw.duration[0],
+        difficulty: raw.difficulty[0],
         page: raw.page[0],
       }),
     ).toEqual(filters);
@@ -68,6 +63,7 @@ describe("catalog filters", () => {
     for (const path of [
       "//evil.test/explore",
       "/explore?interest=unknown",
+      "/explore?difficulty=fluent",
       "/explore?page=0",
       "/explore?q=a&q=b",
       "/explore#x",

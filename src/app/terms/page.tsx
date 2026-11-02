@@ -5,9 +5,11 @@ export default function Terms() {
     <article className="legal opens">
       <h1>Terms of use</h1>
       <p>
-        This catalog helps you discover authentic Japanese-language videos
-        hosted on YouTube. It does not own the videos, promise availability or
-        assess your proficiency. Difficulty is not assessed.
+        This catalog helps you find authentic Japanese-language YouTube videos
+        for immersion learning. It does not own the videos, promise availability
+        or assess your proficiency. Difficulty categories are curator judgments
+        about the language in a video, not JLPT certification or learner
+        placement. Videos without an assessment are labeled Not assessed.
       </p>
       <p>
         By using this site, you agree to the{" "}

@@ -1,21 +1,8 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Source_Serif_4 } from "next/font/google";
 import Link from "next/link";
 import { resetPrivacy } from "@/app/privacy-actions";
 import { env } from "@/lib/env";
 import "./globals.css";
-
-const display = Bricolage_Grotesque({
-  variable: "--font-bricolage",
-  subsets: ["latin"],
-  display: "swap",
-  axes: ["wdth", "opsz"],
-});
-const prose = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export function generateMetadata(): Metadata {
   return {
@@ -25,7 +12,7 @@ export function generateMetadata(): Metadata {
       template: "%s | Japanese Content Explorer",
     },
     description:
-      "Discover Japanese videos about your interests, selected by human reviewers and sourced from YouTube.",
+      "Learn Japanese through authentic YouTube videos. Find immersion material by interest and curator-rated learning difficulty.",
     referrer: "strict-origin-when-cross-origin",
   };
 }
@@ -36,30 +23,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${display.variable} ${prose.variable}`}>
+    <html lang="en">
       <body>
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>
-        <header className="site-header container">
-          <Link
-            className="wordmark"
-            href="/"
-            aria-label="Japanese Content Explorer home"
-          >
-            <span aria-hidden="true">JCE</span>
-            <span className="wordmark-name">Japanese Content Explorer</span>
-          </Link>
-          <nav aria-label="Main navigation">
-            <Link href="/explore">Explore</Link>
-            <Link href="/">Choose interests</Link>
-          </nav>
-        </header>
+        <div className="site-header-shell">
+          <header className="site-header container">
+            <Link
+              className="wordmark"
+              href="/"
+              aria-label="Japanese Content Explorer home"
+            >
+              <span aria-hidden="true">JCE</span>
+              <span className="wordmark-name">Japanese Content Explorer</span>
+            </Link>
+            <nav aria-label="Main navigation">
+              <Link href="/explore">Explore</Link>
+              <Link href="/">Choose interests</Link>
+            </nav>
+          </header>
+        </div>
         <main id="main-content" className="container main-content">
           {children}
         </main>
         <footer className="site-footer container">
-          <p>Japanese videos. Your interests.</p>
+          <p>Japanese immersion, one video at a time.</p>
           <nav aria-label="Legal and privacy">
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
