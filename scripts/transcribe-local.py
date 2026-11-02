@@ -54,6 +54,19 @@ def save_vtt(path, segments):
     temporary.replace(path)
 
 
+def nullable_measurements(record, fields, prefix, warnings):
+    normalized = record
+    for field in fields:
+        value = record.get(field)
+        if value is None or math.isfinite(value):
+            continue
+        if normalized is record:
+            normalized = record.copy()
+        normalized[field] = None
+        warnings.append(f"{prefix}{field}: unavailable non-finite model measurement")
+    return normalized
+
+
 def segments_from(result):
     segments = []
     for raw in result["segments"]:
@@ -83,15 +96,29 @@ def segments_from(result):
             )
             if key in raw
         }
+        warnings = []
+        segment = nullable_measurements(
+            segment,
+            ("avg_logprob", "no_speech_prob", "compression_ratio"),
+            "",
+            warnings,
+        )
         segment["text"] = text
-        segment["words"] = raw.get("words", [])
+        segment["words"] = [
+            nullable_measurements(
+                word, ("start", "end", "probability"), f"words[{index}].", warnings
+            )
+            for index, word in enumerate(raw.get("words", []))
+        ]
+        if warnings:
+            segment["qualityWarnings"] = warnings
         segments.append(segment)
     if result.get("text", "").strip() and not segments:
         raise ValueError("Whisper returned text without usable timed segments")
     return segments
 
 
-def download_audio(video_id, directory):
+def download_audio(video_id, directory, audio_format):
     command = [
         sys.executable,
         "-m",
@@ -122,7 +149,7 @@ def download_audio(video_id, directory):
         "--match-filters",
         "!is_live & live_status!=is_upcoming",
         "--format",
-        "bestaudio",
+        audio_format,
         "--write-info-json",
         "--output",
         str(directory / "audio.%(ext)s"),
@@ -189,6 +216,11 @@ def main():
     parser.add_argument("--output", type=Path, default=Path(".local/transcripts"))
     parser.add_argument(
         "--only", help="Smoke-run one ID from the manifest; omit for the entire catalog"
+    )
+    parser.add_argument(
+        "--audio-format",
+        default="bestaudio",
+        help="Explicit yt-dlp audio format selector; no automatic format retries",
     )
     args = parser.parse_args()
     rows = json.loads(args.manifest.read_text())
@@ -266,7 +298,8 @@ def main():
                     raise ValueError(
                         "Existing transcript provenance does not match this batch"
                     )
-                save_vtt(vtt, saved["segments"])
+                if not vtt.exists():
+                    save_vtt(vtt, saved["segments"])
                 status = "completed" if saved["segments"] else "no_speech_detected"
             else:
                 report["results"][video_id] = {"status": "downloading"}
@@ -274,7 +307,9 @@ def main():
                 with tempfile.TemporaryDirectory(
                     prefix=video_id + "-", dir=audio_root
                 ) as temporary:
-                    audio, duration = download_audio(video_id, Path(temporary))
+                    audio, duration = download_audio(
+                        video_id, Path(temporary), args.audio_format
+                    )
                     report["results"][video_id] = {"status": "transcribing"}
                     report_progress()
                     import mlx_whisper

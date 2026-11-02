@@ -55,6 +55,38 @@ class TranscriptTests(unittest.TestCase):
             self.assertIn("00:01:00.000 --> 00:01:01.000", content)
             self.assertIn("A&amp;B &lt;日本語&gt; → 次", content)
 
+    def test_unavailable_measurements_preserve_speech_without_inventing_scores(self):
+        result = {
+            "text": "日本語",
+            "segments": [
+                {
+                    "start": 0.0,
+                    "end": 2.0,
+                    "text": "日本語",
+                    "avg_logprob": float("nan"),
+                    "words": [
+                        {
+                            "word": "日本語",
+                            "start": float("nan"),
+                            "end": 2.0,
+                            "probability": float("nan"),
+                        }
+                    ],
+                }
+            ],
+        }
+        segments = transcript["segments_from"](result)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "speech.json"
+            transcript["save_json"](path, {"segments": segments})
+            saved = json.loads(path.read_text())["segments"][0]
+        self.assertEqual(saved["text"], "日本語")
+        self.assertEqual((saved["start"], saved["end"]), (0.0, 2.0))
+        self.assertIsNone(saved["avg_logprob"])
+        self.assertEqual(saved["words"][0]["word"], "日本語")
+        self.assertIsNone(saved["words"][0]["start"])
+        self.assertIsNone(saved["words"][0]["probability"])
+
     def test_json_never_publishes_nonfinite_confidence(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "speech.json"

@@ -88,7 +88,11 @@ The owner's later request adds a separate private operator workflow, not a publi
 
 The input is the current 361-publication snapshot. Optional `--only YOUTUBE_ID` exercises one actual published video. Output defaults to ignored `.local/transcripts/`: one timestamped JSON and WebVTT file per video, plus `batch.json` with every ID's actual status and counts. Finished matching transcripts resume without downloading or inference again. Temporary audio and downloader metadata are deleted after each attempt. Re-running is an explicit retry of failed/pending records; no hidden retries, browser-cookie extraction or access bypass occurs. A YouTube bot challenge stops the run and leaves remaining entries visibly pending.
 
+An explicit `--audio-format 'bestaudio[language^=ja][ext=m4a]'` can select an available original Japanese M4A track when a default audio asset fails. The selector fails if no matching track is available; it does not add automatic retries, cookies or access bypasses. Existing JSON/VTT pairs are left intact on resume; only a missing VTT is regenerated.
+
 JSON includes word timings, model provenance, `machineGenerated: true` and `humanReviewed: false`; WebVTT identifies its machine-generated origin. Japanese is a requested decoding language, not detected-language verification. Empty model results are labeled `no_speech_detected`, never invented text. Outputs can contain recognition errors or hallucinations; they never change publication, language evidence or difficulty. Keep them private unless you have the necessary publication rights. No transcripts/audio enter Git or the public website.
+
+Unavailable non-finite optional confidence/word-alignment measurements are stored as `null` with per-segment `qualityWarnings`, never fabricated as zero or emitted as invalid JSON. Spoken cue timestamps remain strictly finite, nonnegative and positive-duration. Recognized text is preserved even when an optional model measurement is unavailable.
 
 ## Metadata retention and deployment
 
@@ -141,6 +145,24 @@ Behavioral coverage includes normalization boundaries and exact bigints, retry/d
 - Corrected mobile category views now lead with their heading at y=102px and the first video at y=472.39px at both 360px and 390px. Scroll rails contain their screen-reader labels; document width matches viewport width. Corrected empty categories render five real category links, zero images/iframes and zero pretend thumbnail slots. The new-font acknowledgment page had zero media and only first-party requests before acknowledgment.
 - Local Whisper proof used the real cooking video's entire 621.761-second audio and the existing cached model. Its 105 raw records contained five empty zero-duration decoder records; normalization now omits empty records before validating spoken cue timestamps, preserving every recognized character. The resulting JSON and VTT contain 100 spoken cues, and ffprobe parsed all 100 WebVTT packets. Five offline regression tests passed. An isolated real-output resume completed with `PATH=/nonexistent`, proving that completed transcripts need neither downloading nor media tools again. The full 361-ID batch's actual coverage is recorded in private `.local/transcripts/batch.json`; the target size is not a completion claim.
 - The deployed Yorimichi HTML/client audit checked two actual HTML responses and ten first-party script responses; none contained configured production credential values.
+
+### Local Whisper batch outcome
+
+Final output audit against the exact published snapshot:
+
+| Check | Verified result |
+| --- | ---: |
+| Published videos in snapshot | 361 |
+| Complete JSON/WebVTT pairs | 361 |
+| Failed or pending videos | 0 |
+| Spoken cues | 70,771 |
+| Input audio hours | 73.36 |
+| Temporary audio files retained | 0 |
+
+The first pass completed 357 videos. Explicit recovery processed only unfinished inputs; existing completed pairs were not transcribed again. Two forbidden media responses succeeded with fresh ordinary downloads; the last unhealthy audio asset succeeded using its listed original Japanese M4A track. One model `avg_logprob` was non-finite: its transcript now retains the speech and valid cues, with that optional score explicitly `null` and flagged in `qualityWarnings`.
+
+Six offline exporter regression tests pass. The final recovered WebVTT was parsed by ffprobe with 130 packets. Every snapshot ID has matching provenance, strict JSON, positive finite cue ranges and matching JSON/VTT cue counts. `.local/transcripts/batch.json` is the final run report; `.local/transcripts/validation.json` is the complete output audit; `batch-initial.json` preserves the first-pass outcome. These files and all transcripts remain private. This is machine-generated recognition, not a human accuracy or difficulty assessment.
+
 
 
 ### Deployment and remaining operator prerequisites
