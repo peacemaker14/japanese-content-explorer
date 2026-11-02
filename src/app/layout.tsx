@@ -39,8 +39,8 @@ export default function RootLayout({
               <span className="wordmark-name">Japanese Content Explorer</span>
             </Link>
             <nav aria-label="Main navigation">
-              <Link href="/explore">Explore</Link>
-              <Link href="/">Choose interests</Link>
+              <Link href="/explore">Categories</Link>
+              <Link href="/#mix-interests">Choose interests</Link>
             </nav>
           </header>
         </div>

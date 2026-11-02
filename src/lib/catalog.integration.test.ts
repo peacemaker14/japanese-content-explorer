@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Pool } from "pg";
 import { hasTestDatabase, withTestDatabase } from "../../tests/database";
-import { getVideo, listInterests, listVideos } from "./catalog-core";
+import { getVideo, listCategories, listVideos } from "./catalog-core";
 import { parseCatalogFilters } from "./catalog-filters";
 import type { Difficulty } from "./difficulty";
 
@@ -166,11 +166,6 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
       expect(detail?.languageStatus).toBe("likely_ja");
       for (const id of [...hidden, "malformed", "xxxxxxxxxxx"])
         expect(await getVideo(id, pool)).toBeNull();
-      const taxonomy = await listInterests(pool);
-      expect(taxonomy).toHaveLength(5);
-      expect(taxonomy.find((i) => i.slug === "gaming")?.subtopics[0].slug).toBe(
-        "gaming/reviews",
-      );
       const empty = await listVideos(
         parseCatalogFilters({ q: "no matches", page: "99" }),
         pool,
@@ -181,6 +176,71 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
         totalPages: 0,
         items: [],
       });
+    });
+  });
+  it("keeps category counts, covers and subtopics inside reviewed public memberships", async () => {
+    await withTestDatabase(async (pool) => {
+      await fixture(pool, 1, {
+        interests: ["gaming", "food-cooking"],
+        subtopic: "gaming/reviews",
+      });
+      await fixture(pool, 2, { subtopic: "gaming/retro-games" });
+      await fixture(pool, 3, { status: "candidate" });
+      await fixture(pool, 4, { status: "hidden" });
+      await fixture(pool, 5, { age: 29 });
+      await fixture(pool, 6, { manual: false });
+      await fixture(pool, 7, { embeddable: false });
+      await fixture(pool, 8);
+      await fixture(pool, 9, { interests: [], subtopic: "gaming/reviews" });
+      await pool.query(
+        "UPDATE videos SET language_status='unverified' WHERE youtube_id='v0000000008'",
+      );
+      await pool.query(
+        "UPDATE videos SET thumbnail_url='https://i.ytimg.com/vi/' || youtube_id || '/hqdefault.jpg' WHERE youtube_id != 'v0000000002'",
+      );
+      await pool.query(
+        "UPDATE videos SET published_at='2026-02-01' WHERE youtube_id != 'v0000000001'",
+      );
+      await pool.query(`
+        INSERT INTO video_interests(video_id, interest_id, source, reviewed)
+        SELECT v.id, i.id, 'query', false FROM videos v CROSS JOIN interests i
+        WHERE v.youtube_id='v0000000002' AND i.slug='food-cooking'
+      `);
+      await pool.query(`
+        INSERT INTO video_subtopics(video_id, subtopic_id)
+        SELECT v.id, s.id FROM videos v CROSS JOIN subtopics s
+        JOIN interests i ON i.id=s.interest_id
+        WHERE v.youtube_id='v0000000002' AND i.slug='food-cooking' AND s.slug='coffee'
+      `);
+      const categories = await listCategories(pool);
+      const gaming = categories.find((category) => category.slug === "gaming")!;
+      expect(gaming.videoCount).toBe(2);
+      expect(gaming.cover?.youtubeId).toBe("v0000000001");
+      expect(
+        gaming.subtopics.find((topic) => topic.slug === "gaming/reviews")
+          ?.videoCount,
+      ).toBe(1);
+      expect(
+        gaming.subtopics.find((topic) => topic.slug === "gaming/retro-games")
+          ?.videoCount,
+      ).toBe(1);
+      const food = categories.find(
+        (category) => category.slug === "food-cooking",
+      )!;
+      expect(food.videoCount).toBe(1);
+      expect(food.cover?.youtubeId).toBe("v0000000001");
+      expect(
+        food.subtopics.find((topic) => topic.slug === "food-cooking/coffee")
+          ?.videoCount,
+      ).toBe(0);
+      const cars = categories.find(
+        (category) => category.slug === "cars-driving",
+      )!;
+      expect(cars.videoCount).toBe(0);
+      expect(cars.cover).toBeNull();
+      expect(cars.subtopics.every((topic) => topic.videoCount === 0)).toBe(
+        true,
+      );
     });
   });
   it("filters assessed and unassessed language difficulty without losing counts or other facets", async () => {

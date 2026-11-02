@@ -4,7 +4,7 @@ import { youtubeIdPattern } from "./taxonomy";
 import type {
   CatalogFilters,
   CatalogPage,
-  InterestWithSubtopics,
+  CategorySummary,
   VideoCardData,
   VideoDetailData,
 } from "./catalog-types";
@@ -114,12 +114,41 @@ export async function getVideo(
   const row = result.rows[0];
   return row ? { ...row, publishedAt: row.publishedAt.toISOString() } : null;
 }
-export async function listInterests(
+export async function listCategories(
   pool: Pool = getPool(),
-): Promise<InterestWithSubtopics[]> {
-  const result =
-    await pool.query<InterestWithSubtopics>(`SELECT i.slug, i.name, i.description,
-    COALESCE((SELECT json_agg(json_build_object('slug', i.slug || '/' || s.slug, 'name', s.name) ORDER BY s.id)
-    FROM subtopics s WHERE s.interest_id = i.id), '[]'::json) AS subtopics FROM interests i ORDER BY i.id`);
+): Promise<CategorySummary[]> {
+  const result = await pool.query<CategorySummary>(`
+    WITH visible AS MATERIALIZED (
+      SELECT v.id, v.youtube_id, v.title, v.thumbnail_url, v.published_at, vi.interest_id
+      FROM videos v
+      JOIN video_interests vi ON vi.video_id = v.id AND vi.reviewed = true AND vi.source = 'manual'
+      WHERE ${publicVideoPredicate}
+    ), category_counts AS (
+      SELECT interest_id, count(*)::integer AS total FROM visible GROUP BY interest_id
+    ), covers AS (
+      SELECT DISTINCT ON (interest_id) interest_id, youtube_id, title, thumbnail_url
+      FROM visible
+      ORDER BY interest_id, (thumbnail_url IS NULL), published_at DESC, youtube_id ASC
+    ), subtopic_counts AS (
+      SELECT vs.subtopic_id, count(*)::integer AS total
+      FROM visible pv
+      JOIN video_subtopics vs ON vs.video_id = pv.id
+      JOIN subtopics s ON s.id = vs.subtopic_id AND s.interest_id = pv.interest_id
+      GROUP BY vs.subtopic_id
+    )
+    SELECT i.slug, i.name, i.description, COALESCE(cc.total, 0) AS "videoCount",
+      CASE WHEN c.youtube_id IS NULL THEN NULL ELSE json_build_object(
+        'youtubeId', c.youtube_id, 'title', c.title, 'thumbnailUrl', c.thumbnail_url
+      ) END AS cover,
+      COALESCE((SELECT json_agg(json_build_object(
+        'slug', i.slug || '/' || s.slug, 'name', s.name, 'videoCount', COALESCE(sc.total, 0)
+      ) ORDER BY s.id)
+        FROM subtopics s LEFT JOIN subtopic_counts sc ON sc.subtopic_id = s.id
+        WHERE s.interest_id = i.id), '[]'::json) AS subtopics
+    FROM interests i
+    LEFT JOIN category_counts cc ON cc.interest_id = i.id
+    LEFT JOIN covers c ON c.interest_id = i.id
+    ORDER BY i.id
+  `);
   return result.rows;
 }

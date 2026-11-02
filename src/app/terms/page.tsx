@@ -12,6 +12,13 @@ export default function Terms() {
         placement. Videos without an assessment are labeled Not assessed.
       </p>
       <p>
+        Category and subtopic selections may be assistant-reviewed from a
+        video’s title and description. Metadata review does not verify the
+        spoken language, factual accuracy or learning difficulty. Language
+        indicated by creator-provided audio metadata is labeled separately from
+        listening verification.
+      </p>
+      <p>
         By using this site, you agree to the{" "}
         <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>.
         Playback is provided by YouTube, subject to creator permissions,

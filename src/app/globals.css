@@ -1,5 +1,5 @@
 /* Hallmark · v2.0.0 · scope: app · shape: app screen · theme: HENNGE-inspired neutrals (by request) · genre: modern-minimal · posture: restrained · surface: absolute · nav: wordmark and two text destinations · footer: inline legal links · signature: Japanese immersion video catalog · imagery: official YouTube thumbnails only · copy: verbatim */
-/* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · weakest: H, preserve Japanese title legibility and prioritize learning difficulty in the filter row. */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · weakest: H, make categories visible destinations while preserving Japanese title legibility and difficulty filtering. */
 /* Hallmark · dismissed 49 · .button, .btn and .text-button use nowrap; native YouTube links include a screen-reader-only new-tab label. */
 @import "tailwindcss";
 @import "./tokens.css";
@@ -191,8 +191,11 @@ button:active:not(:disabled),
   max-width: 60ch;
   color: var(--color-ink-2);
 }
-.home-screen {
+.interest-mix {
   max-width: 880px;
+  margin-top: var(--space-2xl);
+  border-top: 1px solid var(--color-rule);
+  padding-top: var(--space-lg);
 }
 fieldset {
   margin: 0;
@@ -706,6 +709,120 @@ input[aria-invalid="true"] {
   min-height: 200px;
 }
 
+.category-browser {
+  margin-bottom: var(--space-xl);
+}
+.category-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-xs) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+.category-section-heading p,
+.category-context {
+  color: var(--color-ink-2);
+  max-width: 65ch;
+}
+.category-context {
+  margin-bottom: var(--space-lg);
+}
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-lg) var(--space-md);
+}
+.category-card {
+  display: block;
+  min-width: 0;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.category-card-copy {
+  display: grid;
+  gap: var(--space-xs);
+  padding-block: var(--space-sm);
+}
+.category-card h3 {
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+.category-video-count,
+.category-description {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.category-video-count {
+  font-variant-numeric: tabular-nums;
+}
+.category-description {
+  line-height: 1.5;
+}
+.category-cover-empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  padding: var(--space-sm);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  background: var(--color-paper-2);
+}
+.category-navigation,
+.category-subtopics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
+}
+.category-navigation {
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: var(--space-lg);
+}
+.category-navigation a,
+.category-subtopics a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-rule-2);
+  color: var(--color-ink);
+  background: var(--color-panel);
+  text-decoration: none;
+  font-size: var(--text-sm);
+}
+.category-navigation a[aria-current="page"],
+.category-navigation a[data-selected="true"],
+.category-subtopics a[aria-current="page"],
+.category-subtopics a[data-selected="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
+}
+.category-navigation-count {
+  font-variant-numeric: tabular-nums;
+}
+.category-card:hover h3 {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.category-refinements {
+  margin-bottom: var(--space-xl);
+}
+.category-refinements > summary {
+  min-height: var(--control-height);
+  align-content: center;
+  width: fit-content;
+  padding-block: var(--space-xs);
+  font-weight: 500;
+}
+.category-refinements .catalog-filters {
+  margin-bottom: 0;
+}
 @media (hover: hover) {
   a:hover,
   .text-button:hover {
@@ -738,6 +855,9 @@ input[aria-invalid="true"] {
 @media (max-width: 959px) {
   :root {
     --gutter: 24px;
+  }
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .video-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -794,6 +914,9 @@ input[aria-invalid="true"] {
   }
   .interest-option-examples {
     font-size: var(--text-sm);
+  }
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .video-grid {
     grid-template-columns: minmax(0, 1fr);

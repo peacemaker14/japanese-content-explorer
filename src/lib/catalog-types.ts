@@ -25,6 +25,11 @@ export type VideoCardData = {
   difficulty: Difficulty;
   interests: TopicLabel[];
 };
+export type CategorySummary = Omit<InterestWithSubtopics, "subtopics"> & {
+  videoCount: number;
+  cover: Pick<VideoCardData, "youtubeId" | "title" | "thumbnailUrl"> | null;
+  subtopics: (TopicLabel & { videoCount: number })[];
+};
 export type VideoDetailData = VideoCardData & {
   description: string;
   languageStatus: "unverified" | "likely_ja" | "verified_ja";
