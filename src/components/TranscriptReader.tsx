@@ -5,6 +5,9 @@ import type { PublicTranscript } from "@/lib/transcript-types";
 import type { PersonalTranscript } from "@/lib/personal-transcript";
 import type { PersonalTranscriptNotice } from "@/lib/use-personal-transcript";
 import { TranscriptWords } from "./TranscriptWords";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface TranscriptReaderProps {
   transcript: PublicTranscript | PersonalTranscript | null;
@@ -68,15 +71,15 @@ export function TranscriptReader({
       <div className="transcript-toolbar">
         <h2 id={`${id}-heading`}>Transcript</h2>
         {transcript && (
-          <button
+          <Button
             type="button"
-            className="btn btn--quiet"
+            variant="outline"
             aria-pressed={autoFollow}
             aria-controls={`${id}-sentences`}
             onClick={() => setFollowing(autoFollow ? null : transcript)}
           >
             Auto-follow: {autoFollow ? "On" : "Off"}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -90,24 +93,22 @@ export function TranscriptReader({
       {shared && personal && (
         <fieldset className="transcript-source">
           <legend>Read transcript</legend>
-          <label>
-            <input
-              type="radio"
-              name={`${id}-source`}
-              checked={!preferPersonal}
-              onChange={() => { pauseFollow(); onPreferPersonal(false); }}
-            />
-            Shared transcript
-          </label>
-          <label>
-            <input
-              type="radio"
-              name={`${id}-source`}
-              checked={preferPersonal}
-              onChange={() => { pauseFollow(); onPreferPersonal(true); }}
-            />
-            Personal file
-          </label>
+          <RadioGroup
+            name={`${id}-source`}
+            value={preferPersonal ? "personal" : "shared"}
+            onValueChange={(value) => { pauseFollow(); onPreferPersonal(value === "personal"); }}
+            aria-label="Read transcript"
+            className="transcript-source-options"
+          >
+            <label htmlFor={`${id}-shared`}>
+              <RadioGroupItem id={`${id}-shared`} value="shared" />
+              Shared transcript
+            </label>
+            <label htmlFor={`${id}-personal`}>
+              <RadioGroupItem id={`${id}-personal`} value="personal" />
+              Personal file
+            </label>
+          </RadioGroup>
         </fieldset>
       )}
 
@@ -169,11 +170,12 @@ export function TranscriptReader({
           with this video; check that they match before importing.
         </p>
         <label htmlFor={`${id}-file`}>Choose a timed transcript file</label>
-        <input
+        <Input
           id={`${id}-file`}
           type="file"
           accept=".json,.vtt,.srt,application/json,text/vtt,application/x-subrip"
           disabled={restoring || busy}
+          aria-busy={restoring || busy}
           onChange={(event) => {
             const file = event.currentTarget.files?.[0];
             event.currentTarget.value = "";
@@ -183,14 +185,14 @@ export function TranscriptReader({
         <p>Saved only in this browser when storage is available. No account or cross-device sync.</p>
       </details>
       {(personal || canClearSaved) && (
-        <button
+        <Button
           type="button"
-          className="btn btn--quiet"
+          variant="outline"
           disabled={restoring || busy}
           onClick={() => { pauseFollow(); onRemove(); }}
         >
           Remove personal transcript
-        </button>
+        </Button>
       )}
     </section>
   );

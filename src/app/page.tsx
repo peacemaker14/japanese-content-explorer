@@ -3,8 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { listCategories, listVideos } from "@/lib/catalog";
 import { CatalogFilterError, parseCatalogFilters } from "@/lib/catalog-filters";
-import { CatalogFilterForm } from "@/components/CatalogFilterForm";
-import { CatalogFeed } from "@/components/CatalogFeed";
+import { CatalogDiscovery } from "@/components/CatalogDiscovery";
+import { Button } from "@/components/ui/button";
 import { catalogFeedUrl } from "@/lib/catalog-feed";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function DiscoverPage({ searchParams }: {
       <section className="state-panel">
         <h1>Invalid filters</h1>
         <p>This link contains a filter we can’t use. Reset the filters to discover videos.</p>
-        <Link className="button" href="/">Reset filters</Link>
+        <Button asChild><Link href="/">Reset filters</Link></Button>
       </section>
     );
   }
@@ -40,8 +40,7 @@ export default async function DiscoverPage({ searchParams }: {
         <h1>Follow your curiosity.</h1>
         <p>Discover Japanese videos about things you already love.</p>
       </header>
-      <CatalogFilterForm key={returnTo} filters={filters} interests={interests} clearHref="/" />
-      <CatalogFeed initialPage={result} filterUrl={returnTo} />
+      <CatalogDiscovery filters={filters} interests={interests} initialPage={result} filterUrl={returnTo} />
     </section>
   );
 }

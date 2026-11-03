@@ -13,6 +13,7 @@ import {
   seekPlayerTo,
   type YouTubePlayer,
 } from "@/lib/youtube-iframe";
+import { Button } from "@/components/ui/button";
 
 const errors: Record<number, string> = {
   100: "This video is unavailable, private or removed.",
@@ -206,14 +207,15 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
               : "The creator’s Made-for-Kids designation is unavailable."}{" "}
             We do not embed it here. Transcript seeking is unavailable.
           </p>
+          <Button asChild>
           <a
-            className="btn"
             href={`https://www.youtube.com/watch?v=${youtubeId}`}
             target="_blank"
             rel="noreferrer"
           >
             Open original video
           </a>
+          </Button>
         </div>
       );
 
@@ -227,13 +229,13 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
         {status && <p role={failed ? "alert" : "status"}>{status}</p>}
         {failed && (
           <div className="player-actions">
-            <button
-              className="btn"
+            <Button
               type="button"
               onClick={() => setAttempt((value) => value + 1)}
             >
               Retry player
-            </button>
+            </Button>
+            <Button asChild variant="link">
             <a
               href={`https://www.youtube.com/watch?v=${youtubeId}`}
               target="_blank"
@@ -241,6 +243,7 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
             >
               Open original video
             </a>
+            </Button>
           </div>
         )}
       </section>

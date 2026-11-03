@@ -1,0 +1,16 @@
+/* Hallmark · v2.0.0 · scope: app · shape: app screen · theme: custom · genre: editorial · signature: real video results · states: loading, empty, error, full */
+/* Hallmark · pre-emit critique: motion signals navigation only; grid geometry and player state remain untouched. */
+.page-transition, .catalog-results { min-width: 0; }
+.page-transition { animation: page-enter var(--dur-short) var(--ease-out); }
+.catalog-results-enter { animation: results-enter var(--dur-micro) var(--ease-out); }
+.catalog-results-pending { animation: results-enter var(--dur-micro) var(--ease-out); }
+.catalog-feed-shell { position: relative; min-width: 0; }
+.catalog-feed-current[data-pending="true"] { position: absolute; inset-inline: 0; top: 0; height: 0; overflow: clip; visibility: hidden; pointer-events: none; }
+.catalog-count-loading { display: block; width: 120px; height: var(--text-sm); }
+
+@keyframes page-enter { from { opacity: 0.7; } to { opacity: 1; } }
+@keyframes results-enter { from { opacity: 0.6; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition, .catalog-results-enter, .catalog-results-pending { animation: none; }
+}

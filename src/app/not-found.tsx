@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
@@ -8,9 +9,11 @@ export default function NotFound() {
         The video may no longer be in the public catalog, or this link may be
         incorrect.
       </p>
-      <Link className="button" href="/">
+      <Button asChild>
+      <Link href="/">
         Explore videos
       </Link>
+      </Button>
     </section>
   );
 }

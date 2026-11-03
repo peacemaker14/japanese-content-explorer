@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function ErrorPage({
   retry,
@@ -16,12 +17,14 @@ export default function ErrorPage({
         address bar. Try again in a moment.
       </p>
       <div className="state-actions">
-        <button className="button" type="button" onClick={retry}>
+        <Button type="button" onClick={retry}>
           Try again
-        </button>
-        <Link className="button button-secondary" href="/interests">
+        </Button>
+        <Button asChild variant="outline">
+        <Link href="/interests">
           Choose interests
         </Link>
+        </Button>
       </div>
     </section>
   );

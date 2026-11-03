@@ -1,9 +1,9 @@
 {
   "findings": {
-    "framework": "Existing Next.js App Router and Tailwind CSS application",
+    "framework": "Existing Next.js App Router and Tailwind CSS application with checked-in shadcn/ui Radix primitives",
     "fonts": "Preserved Rethink Sans via next/font with Japanese-capable system fallback",
     "palette": "Approved warm #FAFAF4 canvas, forest text and restrained #D7F45B lime; semantic lime/blue/orange difficulty chips and forest transcript chips",
-    "motion": "Transform-only neutral card shimmer, static shapes under prefers-reduced-motion, and restrained control feedback",
+    "motion": "Short opacity-only page/results changes, bounded menu/press feedback and neutral card shimmers, with reduced-motion alternatives",
     "material": "Actual stored public catalog records and official YouTube thumbnails; no invented content or counts"
   },
   "reference": {
@@ -25,7 +25,9 @@
     "Explicit Use my interests action and resettable compact preferences",
     "Rights-aware transcript workspace and browser-local saved controls",
     "Two bounded responsive rows of loading cards with a separate polite screen-reader announcement",
-    "Opaque, labeled 14px difficulty and transcript chips that do not rely on color alone"
+    "Opaque, labeled 14px difficulty and transcript chips that do not rely on color alone",
+    "Branded shadcn Button, Input, Select, Checkbox and RadioGroup across existing common controls",
+    "Immediate composed filter intent with cancellable Next navigation and preserved pending feed geometry"
   ],
-  "verification": "250 tests across 25 files passed against the direct test branch, plus TypeScript, ESLint and production build. Actual delayed API loads showed 6 desktop/2 phone shimmers, 20-to-40 loaded items, bounded virtualized mounts and successful failure/retry recovery. Reduced motion computed animation none and overlay opacity 0. No overflow at exercised 360/375/390/560/1280 surfaces; narrowest two-column badge gap 45px; level contrasts 12.94/8.51/8.42. Hallmark rendered five isolated consent captures with 0 failures/0 Reflex/4 reviewed warnings; independent fresh-context source and completed-thumbnail mobile/desktop review returned ship. Warnings concern a hidden new-tab suffix, consent/removal labels proven to fit at 320px, and intentional active-navigation versus primary-action treatments. Consented functional captures are separate from automated consent-only renders."
+  "verification": "248 tests across 25 files passed against the direct test branch, plus TypeScript, ESLint and production build. Real browser checks passed rapid composed filters, editable drafts during requests, keyboard Select navigation/Escape, preference reset, private/shared transcript switching, dictionary lookup and preserved player iframe identity. Unchanged submissions and canceled navigation retained 40 loaded videos and DOM identity; Back restored exactly 500px. Phone search input/button both measured 48px with no overflow; reduced-motion feedback was verified. Hallmark rendered five consent-only captures with 0 failures/0 Reflex/1 reviewed F4 warning: primary, destructive and selected-toggle primitive recipes are distinct semantic states, not competing page actions. Kept audit retained 29/29 links, 10/10 fields, 1/1 headings and 40/43 native handlers; three replaced checkbox/radio wrappers are recorded, with equivalent Radix callbacks browser-verified. Independent fresh-context finish review returned ship; consented functional captures were reviewed separately."
 }

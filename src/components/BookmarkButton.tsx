@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { useBookmarks } from "@/lib/use-bookmarks";
 import type { BookmarkResult } from "@/lib/bookmarks";
+import { Button } from "@/components/ui/button";
 
 /** title is used only for the accessible name; storage and requests use youtubeId alone. */
 export function BookmarkButton({ youtubeId, title }: { youtubeId: string; title: string }) {
@@ -15,9 +16,10 @@ export function BookmarkButton({ youtubeId, title }: { youtubeId: string; title:
 
   return (
     <div className="bookmark-control">
-      <button
+      <Button
         type="button"
-        className={`bookmark-button${saved ? " is-saved" : ""}`}
+        variant="ghost"
+        size="icon"
         aria-label={label}
         title={hydrated ? label : "Loading saved videos"}
         aria-pressed={saved}
@@ -28,7 +30,7 @@ export function BookmarkButton({ youtubeId, title }: { youtubeId: string; title:
         <svg width="20" height="20" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
           <path d="M6 3.5h12v17l-6-4-6 4z" />
         </svg>
-      </button>
+      </Button>
       <span className="bookmark-feedback" id={feedbackId} role="status">{feedback}</span>
     </div>
   );

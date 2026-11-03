@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { acceptPrivacy } from "../privacy-actions";
 import { safeNext } from "@/lib/consent";
+import { Button } from "@/components/ui/button";
 export const metadata = { title: "Before you explore" };
 export default async function Welcome({
   searchParams,
@@ -34,9 +35,9 @@ export default async function Welcome({
       </p>
       <form action={acceptPrivacy}>
         <input type="hidden" name="next" value={safeNext(raw.next)} />
-        <button className="btn btn--primary" type="submit">
+        <Button type="submit">
           Acknowledge &amp; continue
-        </button>
+        </Button>
       </form>
     </section>
   );

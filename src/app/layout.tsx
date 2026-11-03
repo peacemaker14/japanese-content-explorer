@@ -4,6 +4,7 @@ import { Rethink_Sans } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { resetPrivacy } from "@/app/privacy-actions";
 import { env } from "@/lib/env";
+import { Button } from "@/components/ui/button";
 import "./globals.css";
 
 const rethinkSans = Rethink_Sans({
@@ -31,10 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="site-footer container">
           <p>A little detour into Japanese.</p>
           <nav aria-label="Legal and privacy">
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
+            <Button asChild variant="link"><Link href="/privacy">Privacy</Link></Button>
+            <Button asChild variant="link"><Link href="/terms">Terms</Link></Button>
             <form action={resetPrivacy}>
-              <button className="text-button" type="submit">Reset privacy acknowledgment</button>
+              <Button variant="link" type="submit">Reset privacy acknowledgment</Button>
             </form>
           </nav>
         </footer>

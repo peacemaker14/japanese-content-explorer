@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { JAPANESE_DICTIONARY_ATTRIBUTION, lookupJapanese, resetJapaneseTools } from "@/lib/japanese-tools";
 import type { JapaneseLookupResult, JapaneseWordQuery } from "@/lib/japanese-tools-types";
+import { Button } from "@/components/ui/button";
 
 interface WordDictionaryProps {
   query: JapaneseWordQuery;
@@ -67,9 +68,9 @@ export function WordDictionary({ query, onClose, id }: WordDictionaryProps) {
     >
       <div className="dictionary-heading">
         <h3 id={heading}>Word details: <span lang="ja">{surface}</span></h3>
-        <button type="button" className="button button-secondary" onClick={onClose}>
+        <Button type="button" variant="outline" onClick={onClose}>
           Close word details
-        </button>
+        </Button>
       </div>
       {state.status === "loading" && (
         <p className="reading-status" role="status">Loading local dictionary… The first lookup downloads dictionary data, not your text.</p>
@@ -79,9 +80,9 @@ export function WordDictionary({ query, onClose, id }: WordDictionaryProps) {
           <p className="reading-status" role="alert">
             The local dictionary could not load. Check your connection to download its data, then try again. Your text stays on this device.
           </p>
-          <button
+          <Button
             type="button"
-            className="button button-secondary"
+            variant="outline"
             onClick={() => {
               resetJapaneseTools();
               setState({ status: "loading" });
@@ -89,7 +90,7 @@ export function WordDictionary({ query, onClose, id }: WordDictionaryProps) {
             }}
           >
             Retry dictionary
-          </button>
+          </Button>
         </div>
       )}
       {state.status === "ready" && (

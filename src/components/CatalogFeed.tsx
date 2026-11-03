@@ -8,12 +8,15 @@ import {
 import { defaultRangeExtractor, useWindowVirtualizer } from "@tanstack/react-virtual";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoCardSkeleton } from "@/components/CatalogSkeleton";
+import { Button } from "@/components/ui/button";
+import { useCatalogNavigation } from "@/components/CatalogNavigation";
+import { parseCatalogFilters } from "@/lib/catalog-filters";
 import {
   catalogRows, createCatalogFeed, includeFocusedRow, requestCatalogPage, resolvedGridColumns,
 } from "@/lib/catalog-feed";
 import type { CatalogPage, VideoCardData } from "@/lib/catalog-types";
 
-type FeedProps = { initialPage: CatalogPage; filterUrl: string };
+type FeedProps = { initialPage: CatalogPage; filterUrl: string; pending?: boolean; scrollOnFilterChange?: boolean };
 type GridLayout = { columns: number; width: number; rowGap: number; columnGap: number; scrollMargin: number };
 type FocusedControl = { youtubeId: string; controlIndex: number };
 const controls = "a[href],button:not(:disabled),[tabindex]:not([tabindex='-1'])";
@@ -24,13 +27,32 @@ export function CatalogFeed(props: FeedProps) {
   useEffect(() => {
     if (previousFilter.current !== props.filterUrl) {
       previousFilter.current = props.filterUrl;
-      window.scrollTo({ top: 0, behavior: "instant" });
+      if (props.scrollOnFilterChange !== false) window.scrollTo({ top: 0, behavior: "instant" });
     }
-  }, [props.filterUrl]);
-  return <CatalogFeedWindow key={props.filterUrl} {...props} />;
+  }, [props.filterUrl, props.scrollOnFilterChange]);
+  return (
+    <div className="catalog-feed-shell">
+      {props.pending && (
+        <div className="catalog-results-pending">
+          <div className="feed-heading">
+            <h2>Explore videos</h2>
+            <span className="skeleton catalog-count-loading" aria-hidden="true" />
+          </div>
+          <div className="video-grid" aria-hidden="true">
+            {Array.from({ length: 6 }, (_, index) => <VideoCardSkeleton key={index} />)}
+          </div>
+        </div>
+      )}
+      <div className="catalog-feed-current" data-pending={props.pending ? "true" : undefined}
+        aria-hidden={props.pending || undefined} inert={props.pending || undefined}>
+        <CatalogFeedWindow key={props.filterUrl} {...props} />
+      </div>
+    </div>
+  );
 }
 
-function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
+function CatalogFeedWindow({ initialPage, filterUrl, pending = false }: FeedProps) {
+  const navigation = useCatalogNavigation();
   const [feed] = useState(() => createCatalogFeed(initialPage,
     (page, signal) => requestCatalogPage(filterUrl, page, signal)));
   const state = useSyncExternalStore(feed.subscribe, feed.getSnapshot, feed.getSnapshot);
@@ -62,6 +84,7 @@ function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
   const virtualRows = virtualizer.getVirtualItems();
 
   useLayoutEffect(() => {
+    if (pending) return;
     const element = grid.current;
     const measure = probe.current;
     if (!element || !measure) return;
@@ -89,7 +112,7 @@ function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
       observer.disconnect();
       window.removeEventListener("resize", updateLayout);
     };
-  }, []);
+  }, [pending]);
 
   useLayoutEffect(() => {
     virtualizer.measure();
@@ -107,11 +130,11 @@ function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
   }, []);
 
   useEffect(() => {
-    if (!layout || !nearEnd || state.loading || state.error || !state.hasMore) return;
+    if (pending || !layout || !nearEnd || state.loading || state.error || !state.hasMore) return;
     // Recheck geometry after append: the observer may still describe the old end.
     if (trigger.current && trigger.current.getBoundingClientRect().top <= window.innerHeight + loadAhead)
       void feed.loadNext();
-  }, [feed, layout, nearEnd, state]);
+  }, [feed, layout, nearEnd, pending, state]);
 
   const findItem = (youtubeId: string) => grid.current?.querySelector<HTMLElement>(`[data-video-id="${youtubeId}"]`);
   useLayoutEffect(() => {
@@ -163,7 +186,7 @@ function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
   );
 
   return (
-    <>
+    <div className="catalog-results-enter">
       <div className="feed-heading">
         <h2 id="explore-videos">Explore videos</h2>
         <p className="result-count">{state.total.toLocaleString("en-US")} {state.total === 1 ? "video" : "videos"} matched</p>
@@ -196,9 +219,9 @@ function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
           )}
           <div className="catalog-feed-status" role="status" aria-live="polite" aria-atomic="true">
             {state.loading ? <span className="visually-hidden">Loading more videos…</span> : state.error ? (
-              <><p>{state.error}</p><button className="button button-secondary" type="button" onClick={() => void feed.loadNext()}>Retry loading videos</button></>
+              <><p>{state.error}</p><Button variant="outline" type="button" onClick={() => void feed.loadNext()}>Retry loading videos</Button></>
             ) : state.end === "changed" ? (
-              <><p>The catalog changed while you were browsing.</p><a className="button button-secondary" href={filterUrl}>Refresh results</a></>
+              <><p>The catalog changed while you were browsing.</p><Button asChild variant="outline"><a href={filterUrl}>Refresh results</a></Button></>
             ) : state.end === "complete" ? <p>You’ve reached the end.</p> : <p>Scroll for more videos.</p>}
           </div>
         </>
@@ -206,9 +229,11 @@ function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
         <div className="state-panel empty-state">
           <h2>No videos match these filters</h2>
           <p>Try a different topic or keyword. Only currently published videos appear here.</p>
-          <Link className="button button-secondary" href="/">Clear filters</Link>
+          <Button asChild variant="outline">
+            <Link href="/" onClick={(event) => navigation?.follow(event, () => parseCatalogFilters({}))}>Clear filters</Link>
+          </Button>
         </div>
       )}
-    </>
+    </div>
   );
 }

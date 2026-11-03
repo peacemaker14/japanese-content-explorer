@@ -2,10 +2,14 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
+import Form from "next/form";
 import { taxonomy } from "@/lib/taxonomy";
 import { catalogUrl } from "@/lib/catalog-filters";
 import type { CatalogFilters } from "@/lib/catalog-types";
 import { InterestIcon } from "@/components/InterestIcon";
+import { useCatalogNavigation } from "@/components/CatalogNavigation";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const storageKey = "jce.interests.v1";
 const allowed = new Set<string>(taxonomy.map((interest) => interest.slug));
@@ -75,29 +79,36 @@ function usePreferences() {
 
 export function UseMyInterests({ filters }: { filters: CatalogFilters }) {
   const { selected } = usePreferences();
+  const navigation = useCatalogNavigation();
   return selected.length ? (
-    <Link className="preference-link" href={catalogUrl({ ...filters, interests: selected, subtopics: [], page: 1 })}>
-      Use my interests
-    </Link>
+    <Button asChild variant="link" className="preference-link">
+      <Link href={catalogUrl({ ...filters, interests: selected, subtopics: [], page: 1 })}
+        onClick={(event) => navigation?.follow(event, (current) => ({ ...current, interests: selected, subtopics: [], page: 1 }))}>
+        Use my interests
+      </Link>
+    </Button>
   ) : (
-    <Link className="preference-link" href="/interests">Choose my interests</Link>
+    <Button asChild variant="link" className="preference-link"><Link href="/interests">Choose my interests</Link></Button>
   );
 }
 
 export function InterestPicker() {
   const { selected, unavailable } = usePreferences();
   return (
-    <form action="/" method="get" className="interest-picker">
+    <Form action="/" className="interest-picker">
       <fieldset>
         <legend className="visually-hidden">Choose your interests</legend>
         <div className="interest-options">
           {taxonomy.map((interest) => (
             <label className="interest-option" key={interest.slug}>
-              <input type="checkbox" name="interest" value={interest.slug}
+              <Checkbox name="interest" value={interest.slug}
                 checked={selected.includes(interest.slug)}
-                onChange={() => setPreferences(selected.includes(interest.slug)
-                  ? selected.filter((slug) => slug !== interest.slug)
-                  : [...selected, interest.slug])} />
+                onCheckedChange={(checked) => {
+                  const current = readPreferences().selected;
+                  setPreferences(checked === true
+                    ? current.includes(interest.slug) ? current : [...current, interest.slug]
+                    : current.filter((slug) => slug !== interest.slug));
+                }} />
               <InterestIcon slug={interest.slug} />
               <span className="interest-option-copy">
                 <span className="interest-option-name">{interest.name}</span>
@@ -108,9 +119,9 @@ export function InterestPicker() {
         </div>
       </fieldset>
       <div className="picker-actions">
-        <button className="button" type="submit" disabled={!selected.length}>Use my interests</button>
-        <Link className="button button-secondary" href="/">Explore everything</Link>
-        <button className="text-button" type="button" disabled={!selected.length} onClick={() => setPreferences([])}>Reset preferences</button>
+        <Button type="submit" disabled={!selected.length}>Use my interests</Button>
+        <Button asChild variant="outline"><Link href="/">Explore everything</Link></Button>
+        <Button variant="link" type="button" disabled={!selected.length} onClick={() => setPreferences([])}>Reset preferences</Button>
       </div>
       <p className="helper" role="status">
         {unavailable ? "Browser storage is blocked. Your choices work for this visit but won’t be remembered."
@@ -118,6 +129,6 @@ export function InterestPicker() {
           : "Choose any topics, or explore everything. Reset preferences clears only these choices."}
       </p>
       <noscript><p className="helper">Enable JavaScript to save preferences, or explore everything.</p></noscript>
-    </form>
+    </Form>
   );
 }

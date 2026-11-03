@@ -9,6 +9,7 @@ import type { PersonalTranscript } from "@/lib/personal-transcript";
 import { formatTranscriptTime } from "@/lib/transcript-cues";
 import { useReadingPreferences } from "@/lib/use-reading-preferences";
 import { WordDictionary } from "./WordDictionary";
+import { Button } from "@/components/ui/button";
 
 type ReaderTranscript = PublicTranscript | PersonalTranscript;
 interface TranscriptWordsProps {
@@ -179,14 +180,14 @@ export function TranscriptWords({ transcript, activeIndex, canSeek, autoFollow, 
   return (
     <>
       <div className="reading-controls" role="group" aria-label="Local reading aids">
-        <button type="button" aria-pressed={preferences.furigana}
+        <Button type="button" variant="outline" size="sm" aria-pressed={preferences.furigana}
           onClick={() => { pauseFollow(); preferences.set("furigana", !preferences.furigana); }}>
           Furigana: {preferences.furigana ? "On" : "Off"}
-        </button>
-        <button type="button" aria-pressed={preferences.romaji}
+        </Button>
+        <Button type="button" variant="outline" size="sm" aria-pressed={preferences.romaji}
           onClick={() => { pauseFollow(); preferences.set("romaji", !preferences.romaji); }}>
           Romaji: {preferences.romaji ? "On" : "Off"}
-        </button>
+        </Button>
       </div>
       <p className="reading-status">Select a word for its meaning. Arrow keys move between words; Home / End move within a sentence. Readings are automatic and processed on-device.</p>
       {preferences.storageWarning && <p className="reading-status" role="status">Browser storage is unavailable. Reading controls still work on this page, but your choices may not be saved.</p>}
@@ -194,11 +195,11 @@ export function TranscriptWords({ transcript, activeIndex, canSeek, autoFollow, 
       {readingsFailed && shouldAnalyze && (
         <div className="reading-status">
           <p role="alert">Local readings could not load. The original transcript and word buttons are still available.</p>
-          <button type="button" className="button button-secondary" onClick={() => {
+          <Button type="button" variant="outline" onClick={() => {
             resetJapaneseTools();
             setAnalysis(null);
             setAttempt((value) => value + 1);
-          }}>Retry readings</button>
+          }}>Retry readings</Button>
         </div>
       )}
       <ol

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { useBookmarks } from "@/lib/use-bookmarks";
 import { resolveSavedVideos, type SavedVideosResult } from "./actions";
+import { Button } from "@/components/ui/button";
 
 const pageSize = 20;
 
@@ -38,7 +39,7 @@ export function SavedVideos() {
       <section className="empty-state">
         <h2>Browser storage is unavailable</h2>
         <p className="saved-status" role="alert">{error}</p>
-        <button className="button-secondary" type="button" onClick={retry}>Retry browser storage</button>
+        <Button variant="outline" type="button" onClick={retry}>Retry browser storage</Button>
       </section>
     );
   }
@@ -47,7 +48,7 @@ export function SavedVideos() {
       <section className="empty-state">
         <h2>Save videos you want to come back to.</h2>
         <p>Use the bookmark button on a video to keep it here.</p>
-        <Link className="button-secondary" href="/">Discover videos</Link>
+        <Button asChild variant="outline"><Link href="/">Discover videos</Link></Button>
       </section>
     );
   }
@@ -62,14 +63,14 @@ export function SavedVideos() {
         <section className="empty-state">
           <h2>Privacy acknowledgment needed</h2>
           <p>{result.message}</p>
-          <Link className="button-secondary" href="/welcome?next=%2Fsaved">Review privacy and terms</Link>
+          <Button asChild variant="outline"><Link href="/welcome?next=%2Fsaved">Review privacy and terms</Link></Button>
         </section>
       ) : null}
       {result?.status === "error" ? (
         <section className="empty-state">
           <h2>Saved videos could not be loaded</h2>
           <p className="saved-status" role="alert">{result.message}</p>
-          <button className="button-secondary" type="button" onClick={() => setAttempt((value) => value + 1)}>Retry loading videos</button>
+          <Button variant="outline" type="button" onClick={() => setAttempt((value) => value + 1)}>Retry loading videos</Button>
         </section>
       ) : null}
       {result?.status === "ok" ? (
@@ -80,7 +81,7 @@ export function SavedVideos() {
             </p>
           ) : null}
           {unavailable > 0 && result.items.length > 0 ? (
-            <button className="button-secondary" type="button" onClick={() => setAttempt((value) => value + 1)}>Retry unavailable videos</button>
+            <Button variant="outline" type="button" onClick={() => setAttempt((value) => value + 1)}>Retry unavailable videos</Button>
           ) : null}
           {result.items.length > 0 ? (
             <div className="video-grid">
@@ -90,17 +91,17 @@ export function SavedVideos() {
             <section className="empty-state">
               <h2>No available videos on this page</h2>
               <p>Your saved IDs are unchanged. You can retry later or discover other videos.</p>
-              <button className="button-secondary" type="button" onClick={() => setAttempt((value) => value + 1)}>Retry loading videos</button>
-              <Link className="button-secondary" href="/">Discover videos</Link>
+              <Button variant="outline" type="button" onClick={() => setAttempt((value) => value + 1)}>Retry loading videos</Button>
+              <Button asChild variant="outline"><Link href="/">Discover videos</Link></Button>
             </section>
           )}
         </>
       ) : null}
       {totalPages > 1 ? (
         <nav className="saved-pagination" aria-label="Saved video pages">
-          <button className="button-secondary" type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</button>
+          <Button variant="outline" type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</Button>
           <span aria-live="polite">Page {page} of {totalPages}</span>
-          <button className="button-secondary" type="button" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</button>
+          <Button variant="outline" type="button" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Button>
         </nav>
       ) : null}
     </>

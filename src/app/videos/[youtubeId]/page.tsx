@@ -11,6 +11,7 @@ import { DifficultyBadge } from "@/components/DifficultyBadge";
 import { formatDuration } from "@/components/VideoCard";
 import { difficultyGuidance, presentDifficulty } from "@/lib/difficulty";
 import { getPublicTranscript } from "@/lib/transcripts";
+import { Button } from "@/components/ui/button";
 
 type DetailProps = {
   params: Promise<{ youtubeId: string }>;
@@ -61,9 +62,11 @@ export default async function VideoDetailPage({
         : "Japanese not verified";
   return (
     <article className="detail-screen">
-      <Link className="back-link" href={returnTo}>
+      <Button asChild variant="link" className="back-link">
+      <Link href={returnTo}>
         {returnTo === "/saved" ? "Back to saved videos" : "Back to Discover"}
       </Link>
+      </Button>
       <VideoWorkspace
         youtubeId={video.youtubeId}
         madeForKids={video.madeForKids}
@@ -93,8 +96,8 @@ export default async function VideoDetailPage({
       </header>
         <div className="detail-source">
           <span>Source: YouTube</span>
+          <Button asChild variant="outline">
           <a
-            className="button button-secondary"
             href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -102,6 +105,7 @@ export default async function VideoDetailPage({
             Watch on YouTube
             <span className="visually-hidden"> (opens a new tab)</span>
           </a>
+          </Button>
         </div>
         <div className="detail-information">
           {video.summary ? (
@@ -137,11 +141,13 @@ export default async function VideoDetailPage({
                   <ul className="plain-topic-list">
                     {video.interests.map((interest) => (
                       <li key={interest.slug}>
+                        <Button asChild variant="link">
                         <Link
                           href={`/?${new URLSearchParams({ interest: interest.slug })}`}
                         >
                           {interest.name}
                         </Link>
+                        </Button>
                       </li>
                     ))}
                   </ul>
@@ -154,11 +160,13 @@ export default async function VideoDetailPage({
                     <ul className="plain-topic-list">
                       {video.subtopics.map((subtopic) => (
                         <li key={subtopic.slug}>
+                          <Button asChild variant="link">
                           <Link
                             href={`/?${new URLSearchParams({ subtopic: subtopic.slug })}`}
                           >
                             {subtopic.name}
                           </Link>
+                          </Button>
                         </li>
                       ))}
                     </ul>
