@@ -15,9 +15,10 @@ export const publicVideoPredicate = `v.status = 'published' AND v.embeddable = t
   AND v.language_status IN ('likely_ja', 'verified_ja')
   AND v.metadata_updated_at > now() - interval '29 days'
   AND EXISTS (SELECT 1 FROM video_interests pvi WHERE pvi.video_id = v.id AND pvi.reviewed = true AND pvi.source = 'manual')`;
+export const sharedTranscriptPredicate = `EXISTS (SELECT 1 FROM transcripts t WHERE t.video_id = v.id AND t.visibility = 'public' AND t.sharing_permission = 'granted')`;
 const cardColumns = `v.youtube_id AS "youtubeId", v.title, v.channel_title AS "channelTitle",
  v.thumbnail_url AS "thumbnailUrl", v.published_at AS "publishedAt", v.duration_seconds AS "durationSeconds",
- v.view_count::text AS "viewCount", v.difficulty,
+ v.view_count::text AS "viewCount", v.difficulty, v.estimated_difficulty AS "estimatedDifficulty",
  COALESCE((SELECT json_agg(json_build_object('slug', i.slug, 'name', i.name) ORDER BY i.slug)
  FROM video_interests vi JOIN interests i ON i.id = vi.interest_id
  WHERE vi.video_id = v.id AND vi.reviewed = true AND vi.source = 'manual'), '[]'::json) AS interests`;
@@ -46,13 +47,23 @@ function predicate(filters: CatalogFilters): {
   if (filters.q) {
     const match = bind(`%${filters.q.replace(/[\\%_]/g, "\\$&")}%`);
     clauses.push(
-      `(v.title ILIKE ${match} ESCAPE E'\\\\' OR v.channel_title ILIKE ${match} ESCAPE E'\\\\')`,
+      `(v.title ILIKE ${match} ESCAPE E'\\\\' OR v.channel_title ILIKE ${match} ESCAPE E'\\\\'
+       OR EXISTS (SELECT 1 FROM video_interests vi JOIN interests i ON i.id = vi.interest_id
+         WHERE vi.video_id = v.id AND vi.reviewed = true AND vi.source = 'manual'
+         AND (i.name ILIKE ${match} ESCAPE E'\\\\' OR i.slug ILIKE ${match} ESCAPE E'\\\\'))
+       OR EXISTS (SELECT 1 FROM video_subtopics vs JOIN subtopics s ON s.id = vs.subtopic_id
+         JOIN interests i ON i.id = s.interest_id
+         JOIN video_interests vi ON vi.video_id = vs.video_id AND vi.interest_id = i.id
+         WHERE vs.video_id = v.id AND vi.reviewed = true AND vi.source = 'manual'
+         AND (s.name ILIKE ${match} ESCAPE E'\\\\' OR (i.slug || '/' || s.slug) ILIKE ${match} ESCAPE E'\\\\')))`,
     );
   }
   if (filters.duration === "under-10") clauses.push("v.duration_seconds < 600");
   if (filters.duration === "10-plus") clauses.push("v.duration_seconds >= 600");
   if (filters.difficulty !== "all")
-    clauses.push(`v.difficulty = ${bind(filters.difficulty)}::difficulty`);
+    clauses.push(`COALESCE(NULLIF(v.difficulty, 'unassessed'::difficulty), v.estimated_difficulty, 'unassessed'::difficulty) = ${bind(filters.difficulty)}::difficulty`);
+  if (filters.transcript === "available") clauses.push(sharedTranscriptPredicate);
+  if (filters.transcript === "unavailable") clauses.push(`NOT (${sharedTranscriptPredicate})`);
   return { sql: clauses.join(" AND "), values };
 }
 export async function listVideos(
@@ -104,6 +115,9 @@ export async function getVideo(
     `SELECT ${cardColumns},
     v.description, v.language_status AS "languageStatus", v.default_audio_language AS "defaultAudioLanguage",
     v.made_for_kids AS "madeForKids", v.format,
+    v.difficulty_estimate_note AS "difficultyEstimateNote", v.difficulty_estimate_method AS "difficultyEstimateMethod",
+    CASE WHEN v.summary_sharing_permission = 'granted' THEN v.summary ELSE NULL END AS summary,
+    CASE WHEN v.summary_sharing_permission = 'granted' THEN v.summary_basis ELSE NULL END AS "summaryBasis",
     COALESCE((SELECT json_agg(json_build_object('slug', i.slug || '/' || s.slug, 'name', s.name) ORDER BY i.slug, s.slug)
       FROM video_subtopics vs JOIN subtopics s ON s.id = vs.subtopic_id JOIN interests i ON i.id = s.interest_id
       JOIN video_interests vi ON vi.video_id = vs.video_id AND vi.interest_id = i.id AND vi.reviewed = true AND vi.source = 'manual'
@@ -114,21 +128,34 @@ export async function getVideo(
   const row = result.rows[0];
   return row ? { ...row, publishedAt: row.publishedAt.toISOString() } : null;
 }
+export async function getSavedVideos(
+  youtubeIds: string[],
+  pool?: Pool,
+): Promise<VideoCardData[]> {
+  if (!Array.isArray(youtubeIds) || youtubeIds.length > 50 ||
+      youtubeIds.some((id) => typeof id !== "string" || !youtubeIdPattern.test(id)) ||
+      new Set(youtubeIds).size !== youtubeIds.length)
+    throw new Error("Saved videos require at most 50 unique valid YouTube IDs.");
+  if (!youtubeIds.length) return [];
+  const result = await (pool ?? getPool()).query<CardRow>(
+    `SELECT ${cardColumns} FROM videos v
+     WHERE ${publicVideoPredicate} AND v.youtube_id = ANY($1::text[])
+     ORDER BY array_position($1::text[], v.youtube_id)`,
+    [youtubeIds],
+  );
+  return result.rows.map(card);
+}
 export async function listCategories(
   pool: Pool = getPool(),
 ): Promise<CategorySummary[]> {
   const result = await pool.query<CategorySummary>(`
     WITH visible AS MATERIALIZED (
-      SELECT v.id, v.youtube_id, v.title, v.thumbnail_url, v.published_at, vi.interest_id
+      SELECT v.id, vi.interest_id
       FROM videos v
       JOIN video_interests vi ON vi.video_id = v.id AND vi.reviewed = true AND vi.source = 'manual'
       WHERE ${publicVideoPredicate}
     ), category_counts AS (
       SELECT interest_id, count(*)::integer AS total FROM visible GROUP BY interest_id
-    ), covers AS (
-      SELECT DISTINCT ON (interest_id) interest_id, youtube_id, title, thumbnail_url
-      FROM visible
-      ORDER BY interest_id, (thumbnail_url IS NULL), published_at DESC, youtube_id ASC
     ), subtopic_counts AS (
       SELECT vs.subtopic_id, count(*)::integer AS total
       FROM visible pv
@@ -137,9 +164,6 @@ export async function listCategories(
       GROUP BY vs.subtopic_id
     )
     SELECT i.slug, i.name, i.description, COALESCE(cc.total, 0) AS "videoCount",
-      CASE WHEN c.youtube_id IS NULL THEN NULL ELSE json_build_object(
-        'youtubeId', c.youtube_id, 'title', c.title, 'thumbnailUrl', c.thumbnail_url
-      ) END AS cover,
       COALESCE((SELECT json_agg(json_build_object(
         'slug', i.slug || '/' || s.slug, 'name', s.name, 'videoCount', COALESCE(sc.total, 0)
       ) ORDER BY s.id)
@@ -147,7 +171,6 @@ export async function listCategories(
         WHERE s.interest_id = i.id), '[]'::json) AS subtopics
     FROM interests i
     LEFT JOIN category_counts cc ON cc.interest_id = i.id
-    LEFT JOIN covers c ON c.interest_id = i.id
     ORDER BY i.id
   `);
   return result.rows;

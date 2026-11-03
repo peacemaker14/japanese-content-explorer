@@ -10,4 +10,6 @@ export function proxy(request: NextRequest) {
   );
   return NextResponse.redirect(target);
 }
-export const config = { matcher: ["/", "/explore/:path*", "/videos/:path*"] };
+export const config = {
+  matcher: ["/", "/explore/:path*", "/saved/:path*", "/interests/:path*", "/videos/:path*"],
+};

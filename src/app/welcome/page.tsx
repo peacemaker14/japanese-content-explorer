@@ -19,8 +19,8 @@ export default async function Welcome({
       </p>
       <p>
         We remember your acknowledgment in a cookie for one year. Optional
-        interest preferences stay in this browser. No account, transcript
-        collection or playback analytics.
+        interest preferences stay in this browser. No account, personal
+        transcript uploads or playback analytics.
       </p>
       <p>
         Read our <Link href="/privacy">Privacy policy</Link> and{" "}

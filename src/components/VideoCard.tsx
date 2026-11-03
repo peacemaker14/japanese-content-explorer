@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { VideoCardData } from "@/lib/catalog-types";
 import { VideoThumbnail } from "@/components/VideoThumbnail";
-import { difficultyLabels } from "@/lib/difficulty";
+import { DifficultyBadge } from "@/components/DifficultyBadge";
+import { BookmarkButton } from "@/components/BookmarkButton";
 
 export function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -19,7 +20,15 @@ export function VideoCard({
   return (
     <article className="video-card">
       <Link className="video-card-link" href={href}>
-        <VideoThumbnail src={video.thumbnailUrl} />
+        <div className="video-thumbnail-wrap">
+          <VideoThumbnail src={video.thumbnailUrl} />
+          <span
+            className="video-duration"
+            aria-label={`Duration ${Math.floor(video.durationSeconds / 60)} minutes ${video.durationSeconds % 60} seconds`}
+          >
+            {formatDuration(video.durationSeconds)}
+          </span>
+        </div>
         <h2 className="video-title" lang="ja">
           {video.title}
         </h2>
@@ -27,22 +36,14 @@ export function VideoCard({
       <p className="video-channel" lang="ja">
         {video.channelTitle}
       </p>
-      <div className="video-card-meta">
-        <span
-          aria-label={`Duration ${Math.floor(video.durationSeconds / 60)} minutes ${video.durationSeconds % 60} seconds`}
-        >
-          {formatDuration(video.durationSeconds)}
-        </span>
-        <span>From YouTube</span>
+      <div className="video-details">
+        <DifficultyBadge
+          difficulty={video.difficulty}
+          estimatedDifficulty={video.estimatedDifficulty}
+        />
+        <span className="video-source">YouTube</span>
       </div>
-      <p className="video-difficulty" aria-label="Learning difficulty">
-        {difficultyLabels[video.difficulty]}
-      </p>
-      <ul className="topic-list" aria-label="Reviewed interests">
-        {video.interests.map((interest) => (
-          <li key={interest.slug}>{interest.name}</li>
-        ))}
-      </ul>
+      <BookmarkButton youtubeId={video.youtubeId} title={video.title} />
     </article>
   );
 }

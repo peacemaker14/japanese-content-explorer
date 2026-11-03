@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { TranscriptSegment } from "../lib/transcript-types";
 import {
   pgTable,
   pgEnum,
@@ -12,6 +13,7 @@ import {
   uniqueIndex,
   index,
   check,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 export const languageStatus = pgEnum("language_status", [
@@ -49,6 +51,10 @@ export const sourceKind = pgEnum("source_kind", [
   "youtube_query",
   "tombo_manifest",
 ]);
+export const sharingPermission = pgEnum("sharing_permission", ["unknown", "granted"]);
+export const transcriptSource = pgEnum("transcript_source", ["whisper", "creator_provided"]);
+export const transcriptVisibility = pgEnum("transcript_visibility", ["private", "public"]);
+export const summaryBasis = pgEnum("summary_basis", ["metadata", "transcript"]);
 const time = (name: string) => timestamp(name, { withTimezone: true });
 
 export const interests = pgTable("interests", {
@@ -90,6 +96,13 @@ export const videos = pgTable(
       .default("unverified"),
     format: text("format"),
     difficulty: difficulty("difficulty").notNull().default("unassessed"),
+    estimatedDifficulty: difficulty("estimated_difficulty"),
+    difficultyEstimateNote: text("difficulty_estimate_note"),
+    difficultyEstimateMethod: text("difficulty_estimate_method"),
+    summary: text("summary"),
+    summaryBasis: summaryBasis("summary_basis"),
+    summarySharingPermission: sharingPermission("summary_sharing_permission").notNull().default("unknown"),
+    summaryPermissionNote: text("summary_permission_note"),
     status: videoStatus("status").notNull().default("candidate"),
     reviewedAt: time("reviewed_at"),
     reviewNote: text("review_note"),
@@ -104,8 +117,31 @@ export const videos = pgTable(
       "format_valid",
       sql`format IS NULL OR format IN ('review','tutorial','vlog','interview','other')`,
     ),
+    check("estimate_assessed", sql`estimated_difficulty IS NULL OR estimated_difficulty <> 'unassessed'`),
+    check("estimate_evidence", sql`estimated_difficulty IS NULL OR (length(trim(difficulty_estimate_note)) > 0 AND length(trim(difficulty_estimate_method)) > 0 AND difficulty_estimate_note IS NOT NULL AND difficulty_estimate_method IS NOT NULL)`),
+    check("summary_grant_evidence", sql`summary_sharing_permission <> 'granted' OR (summary IS NOT NULL AND length(trim(summary)) > 0 AND summary_basis IS NOT NULL AND summary_permission_note IS NOT NULL AND length(trim(summary_permission_note)) > 0)`),
     index("videos_status_publication").on(t.status, t.publishedAt),
     index("videos_status_views").on(t.status, t.viewCount),
+  ],
+);
+export const transcripts = pgTable(
+  "transcripts",
+  {
+    videoId: integer("video_id").primaryKey().references(() => videos.id, { onDelete: "cascade" }),
+    source: transcriptSource("source").notNull(),
+    visibility: transcriptVisibility("visibility").notNull().default("private"),
+    sharingPermission: sharingPermission("sharing_permission").notNull().default("unknown"),
+    segments: jsonb("segments").$type<TranscriptSegment[]>().notNull(),
+    permissionNote: text("permission_note"),
+    attribution: text("attribution"),
+    licenseUrl: text("license_url"),
+    createdAt: time("created_at").notNull().defaultNow(),
+    updatedAt: time("updated_at").notNull().defaultNow(),
+  },
+  () => [
+    check("transcript_segments_array", sql`jsonb_typeof(segments) = 'array'`),
+    check("transcript_grant_evidence", sql`sharing_permission <> 'granted' OR (permission_note IS NOT NULL AND length(trim(permission_note)) > 0)`),
+    check("transcript_public_attribution", sql`visibility <> 'public' OR (attribution IS NOT NULL AND length(trim(attribution)) > 0)`),
   ],
 );
 export const videoInterests = pgTable(

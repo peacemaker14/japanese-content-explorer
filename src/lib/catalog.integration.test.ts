@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Pool } from "pg";
 import { hasTestDatabase, withTestDatabase } from "../../tests/database";
-import { getVideo, listCategories, listVideos } from "./catalog-core";
+import { getSavedVideos, getVideo, listCategories, listVideos } from "./catalog-core";
 import { parseCatalogFilters } from "./catalog-filters";
 import type { Difficulty } from "./difficulty";
 
@@ -178,7 +178,7 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
       });
     });
   });
-  it("keeps category counts, covers and subtopics inside reviewed public memberships", async () => {
+  it("keeps category counts and subtopics inside reviewed public memberships", async () => {
     await withTestDatabase(async (pool) => {
       await fixture(pool, 1, {
         interests: ["gaming", "food-cooking"],
@@ -195,12 +195,6 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
       await pool.query(
         "UPDATE videos SET language_status='unverified' WHERE youtube_id='v0000000008'",
       );
-      await pool.query(
-        "UPDATE videos SET thumbnail_url='https://i.ytimg.com/vi/' || youtube_id || '/hqdefault.jpg' WHERE youtube_id != 'v0000000002'",
-      );
-      await pool.query(
-        "UPDATE videos SET published_at='2026-02-01' WHERE youtube_id != 'v0000000001'",
-      );
       await pool.query(`
         INSERT INTO video_interests(video_id, interest_id, source, reviewed)
         SELECT v.id, i.id, 'query', false FROM videos v CROSS JOIN interests i
@@ -215,7 +209,6 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
       const categories = await listCategories(pool);
       const gaming = categories.find((category) => category.slug === "gaming")!;
       expect(gaming.videoCount).toBe(2);
-      expect(gaming.cover?.youtubeId).toBe("v0000000001");
       expect(
         gaming.subtopics.find((topic) => topic.slug === "gaming/reviews")
           ?.videoCount,
@@ -228,7 +221,6 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
         (category) => category.slug === "food-cooking",
       )!;
       expect(food.videoCount).toBe(1);
-      expect(food.cover?.youtubeId).toBe("v0000000001");
       expect(
         food.subtopics.find((topic) => topic.slug === "food-cooking/coffee")
           ?.videoCount,
@@ -237,7 +229,6 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
         (category) => category.slug === "cars-driving",
       )!;
       expect(cars.videoCount).toBe(0);
-      expect(cars.cover).toBeNull();
       expect(cars.subtopics.every((topic) => topic.videoCount === 0)).toBe(
         true,
       );
@@ -309,6 +300,58 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
       );
       expect((await listVideos(parseCatalogFilters({}), pool)).total).toBe(0);
       expect(await getVideo(id, pool)).toBeNull();
+    });
+  });
+  it("searches reviewed topic names and slugs without exposing unreviewed suggestions", async () => {
+    await withTestDatabase(async (pool) => {
+      const gaming = await fixture(pool, 1, { title: "Unrelated" });
+      const coffee = await fixture(pool, 2, { title: "Unrelated", interests: ["food-cooking"], subtopic: "food-cooking/coffee" });
+      const suggested = await fixture(pool, 3, { title: "Unrelated" });
+      await pool.query(`INSERT INTO video_interests(video_id,interest_id,source,reviewed)
+        SELECT v.id,i.id,'query',false FROM videos v CROSS JOIN interests i
+        WHERE v.youtube_id=$1 AND i.slug='food-cooking'`, [suggested]);
+      await pool.query(`INSERT INTO video_subtopics(video_id,subtopic_id)
+        SELECT v.id,s.id FROM videos v CROSS JOIN subtopics s JOIN interests i ON i.id=s.interest_id
+        WHERE v.youtube_id=$1 AND i.slug='food-cooking' AND s.slug='coffee'`, [suggested]);
+      for (const q of ["Food & Cooking", "food-cooking", "Coffee", "coffee", "food-cooking/coffee"])
+        expect((await listVideos(parseCatalogFilters({ q }), pool)).items.map((v) => v.youtubeId)).toEqual([coffee]);
+      expect((await listVideos(parseCatalogFilters({ q: "Gaming" }), pool)).items.map((v) => v.youtubeId)).toEqual([gaming, suggested]);
+    });
+  });
+  it("uses assessed manual difficulty before an estimate and preserves both in output", async () => {
+    await withTestDatabase(async (pool) => {
+      const manual = await fixture(pool, 1, { difficulty: "advanced" });
+      const estimated = await fixture(pool, 2);
+      const unrated = await fixture(pool, 3);
+      await pool.query(`UPDATE videos SET estimated_difficulty='beginner',difficulty_estimate_note='Sampled speech evidence',difficulty_estimate_method='Human sample review'
+        WHERE youtube_id=ANY($1::text[])`, [[manual, estimated]]);
+      for (const [difficulty, id] of [["advanced", manual], ["beginner", estimated], ["unassessed", unrated]]) {
+        const result = await listVideos(parseCatalogFilters({ difficulty }), pool);
+        expect(result.items.map((v) => v.youtubeId)).toEqual([id]);
+      }
+      expect(await getVideo(manual, pool)).toMatchObject({ difficulty: "advanced", estimatedDifficulty: "beginner" });
+      expect(await getVideo(estimated, pool)).toMatchObject({ difficulty: "unassessed", estimatedDifficulty: "beginner", difficultyEstimateMethod: "Human sample review" });
+    });
+  });
+  it("resolves saved IDs in input order with the exact public guard, omitting unavailable rows", async () => {
+    await withTestDatabase(async (pool) => {
+      const first = await fixture(pool, 1);
+      const second = await fixture(pool, 2);
+      const unavailable = [
+        await fixture(pool, 3, { status: "candidate" }),
+        await fixture(pool, 4, { status: "hidden" }),
+        await fixture(pool, 5, { age: 29 }),
+        await fixture(pool, 6, { embeddable: false }),
+        await fixture(pool, 7, { manual: false }),
+        await fixture(pool, 8, { interests: [] }),
+        await fixture(pool, 9),
+      ];
+      await pool.query("UPDATE videos SET language_status='unverified' WHERE youtube_id=$1", [unavailable.at(-1)]);
+      const rows = await getSavedVideos([second, ...unavailable, "xxxxxxxxxxx", first], pool);
+      expect(rows.map((v) => v.youtubeId)).toEqual([second, first]);
+      expect(rows[0]).not.toHaveProperty("description");
+      await pool.query("UPDATE videos SET status='hidden' WHERE youtube_id=$1", [second]);
+      expect((await getSavedVideos([second, first], pool)).map((v) => v.youtubeId)).toEqual([first]);
     });
   });
 });

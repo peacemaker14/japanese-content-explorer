@@ -21,7 +21,9 @@
     "curate:export": "tsx scripts/curate-export.ts",
     "curate:apply": "tsx scripts/curate-apply.ts",
     "metadata:refresh": "tsx scripts/refresh-metadata.ts",
-    "catalog:report": "tsx scripts/catalog-report.ts"
+    "catalog:report": "tsx scripts/catalog-report.ts",
+    "transcripts:apply": "tsx scripts/transcripts-apply.ts",
+    "learning:apply": "tsx scripts/learning-apply.ts"
   },
   "dependencies": {
     "dotenv": "^18.0.9",

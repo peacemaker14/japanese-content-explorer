@@ -2,11 +2,69 @@ export interface YouTubePlayer {
   destroy(): void;
   getCurrentTime(): number;
   getPlayerState(): number;
+  getIframe(): HTMLIFrameElement;
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
+  pauseVideo(): void;
+  cueVideoById(options: { videoId: string; startSeconds: number }): void;
 }
+
 export interface PlayerEvent {
   target: YouTubePlayer;
+}
+
+export interface PlayerStateEvent extends PlayerEvent {
   data: number;
 }
+
+export const PLAYER_STATE = {
+  unstarted: -1,
+  ended: 0,
+  playing: 1,
+  paused: 2,
+  buffering: 3,
+  cued: 5,
+} as const;
+
+/** Clear the active line after native playback ends, even with rounded clocks. */
+export function readPlayerTime(player: YouTubePlayer): number | null {
+  try {
+    if (player.getPlayerState() === PLAYER_STATE.ended) return null;
+    const seconds = player.getCurrentTime();
+    return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A transcript click is a seek, never an instruction to start playback.
+ * Cueing an unstarted/ended video avoids seekTo's implicit playback there.
+ */
+export function seekPlayerTo(
+  player: YouTubePlayer,
+  videoId: string,
+  seconds: number,
+): boolean {
+  if (!Number.isFinite(seconds) || seconds < 0) return false;
+  try {
+    const state = player.getPlayerState();
+    if (
+      state === PLAYER_STATE.unstarted ||
+      state === PLAYER_STATE.ended ||
+      state === PLAYER_STATE.cued
+    ) {
+      player.cueVideoById({ videoId, startSeconds: seconds });
+    } else {
+      player.seekTo(seconds, true);
+      if (state !== PLAYER_STATE.playing && state !== PLAYER_STATE.buffering)
+        player.pauseVideo();
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export interface YouTubeApi {
   Player: new (
     element: HTMLElement,
@@ -18,7 +76,8 @@ export interface YouTubeApi {
       playerVars: { autoplay: 0; controls: 1; playsinline: 1; origin: string };
       events: {
         onReady: (e: PlayerEvent) => void;
-        onError: (e: PlayerEvent) => void;
+        onStateChange: (e: PlayerStateEvent) => void;
+        onError: (e: PlayerStateEvent) => void;
         onAutoplayBlocked: () => void;
       };
     },
@@ -32,6 +91,8 @@ declare global {
 }
 let pending: Promise<YouTubeApi> | undefined;
 export function loadYouTubeIframeApi(): Promise<YouTubeApi> {
+  if (typeof window === "undefined")
+    return Promise.reject(new Error("The YouTube player needs a browser."));
   if (window.YT?.Player) return Promise.resolve(window.YT);
   if (pending) return pending;
   pending = new Promise<YouTubeApi>((resolve, reject) => {

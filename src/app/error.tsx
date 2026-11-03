@@ -16,10 +16,10 @@ export default function ErrorPage({
         address bar. Try again in a moment.
       </p>
       <div className="state-actions">
-        <button className="button" type="button" onClick={() => retry()}>
+        <button className="button" type="button" onClick={retry}>
           Try again
         </button>
-        <Link className="button button-secondary" href="/">
+        <Link className="button button-secondary" href="/interests">
           Choose interests
         </Link>
       </div>

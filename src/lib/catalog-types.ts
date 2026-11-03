@@ -7,6 +7,7 @@ export type CatalogFilters = {
   sort: "newest" | "popular";
   duration: "all" | "under-10" | "10-plus";
   difficulty: DifficultyFilter;
+  transcript: "all" | "available" | "unavailable";
   page: number;
 };
 export type TopicLabel = { slug: string; name: string };
@@ -23,11 +24,11 @@ export type VideoCardData = {
   durationSeconds: number;
   viewCount: string | null;
   difficulty: Difficulty;
+  estimatedDifficulty?: Difficulty | null;
   interests: TopicLabel[];
 };
 export type CategorySummary = Omit<InterestWithSubtopics, "subtopics"> & {
   videoCount: number;
-  cover: Pick<VideoCardData, "youtubeId" | "title" | "thumbnailUrl"> | null;
   subtopics: (TopicLabel & { videoCount: number })[];
 };
 export type VideoDetailData = VideoCardData & {
@@ -37,6 +38,10 @@ export type VideoDetailData = VideoCardData & {
   madeForKids: boolean | null;
   subtopics: TopicLabel[];
   format: "review" | "tutorial" | "vlog" | "interview" | "other" | null;
+  difficultyEstimateNote?: string | null;
+  difficultyEstimateMethod?: string | null;
+  summary?: string | null;
+  summaryBasis?: "metadata" | "transcript" | null;
 };
 export type CatalogPage = {
   items: VideoCardData[];

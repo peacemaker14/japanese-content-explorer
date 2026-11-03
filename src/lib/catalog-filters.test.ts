@@ -14,6 +14,9 @@ describe("catalog filters", () => {
     { difficulty: "fluent" },
     { difficulty: ["beginner", "advanced"] },
     { difficulty: ["beginner"] },
+    { transcript: "private" },
+    { transcript: ["available"] },
+    { transcript: ["available", "unavailable"] },
     { q: ["one", "two"] },
     { sort: ["newest"] },
     { page: "0" },
@@ -33,9 +36,11 @@ describe("catalog filters", () => {
       sort: "popular",
       duration: "10-plus",
       difficulty: "intermediate",
+      transcript: "available",
       page: "3",
     });
     const url = new URL(catalogUrl(filters), "https://example.test");
+    expect(url.pathname).toBe("/");
     const raw: Record<string, string[]> = {};
     for (const key of new Set(url.searchParams.keys()))
       raw[key] = url.searchParams.getAll(key);
@@ -51,6 +56,7 @@ describe("catalog filters", () => {
         sort: raw.sort[0],
         duration: raw.duration[0],
         difficulty: raw.difficulty[0],
+        transcript: raw.transcript[0],
         page: raw.page[0],
       }),
     ).toEqual(filters);
@@ -58,19 +64,33 @@ describe("catalog filters", () => {
   });
   it("validates return links with the same parser", () => {
     expect(validateReturnTo("/explore?interest=gaming&page=2")).toBe(
-      "/explore?interest=gaming&page=2",
+      "/?interest=gaming&page=2",
     );
+    expect(validateReturnTo("/?transcript=available&difficulty=beginner")).toBe(
+      "/?difficulty=beginner&transcript=available",
+    );
+    expect(validateReturnTo("/saved")).toBe("/saved");
+    expect(parseCatalogFilters({}).transcript).toBe("all");
+    expect(catalogUrl(parseCatalogFilters({ transcript: "unavailable" }))).toBe("/?transcript=unavailable");
     for (const path of [
       "//evil.test/explore",
       "/explore?interest=unknown",
       "/explore?difficulty=fluent",
       "/explore?page=0",
       "/explore?q=a&q=b",
+      "/?transcript=private",
+      "/?transcript=available&transcript=unavailable",
       "/explore#x",
+      "/saved?next=https://evil.test",
+      "/saved?interest=gaming",
+      "/saved#section",
+      "/saved/",
+      "/videos/../saved",
+      "//evil.test/saved",
       "/videos/abcdefghijk",
       "/\\evil.test",
       "https://evil.test/explore",
     ])
-      expect(validateReturnTo(path)).toBe("/explore");
+      expect(validateReturnTo(path)).toBe("/");
   });
 });

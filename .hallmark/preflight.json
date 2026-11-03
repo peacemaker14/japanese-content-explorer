@@ -1,1 +1,29 @@
-{"findings":{"framework":"Next.js 16.4.3 App Router and Tailwind 4","fonts":"Self-hosted Rethink Sans through next/font; Japanese-capable system sans","palette":"Owner-supplied study-workspace reference: ivory #f3f0e6, paper #fcfcf5, forest #131f19, lime #d9f05e","motion":"State only, reduced-motion fallback","material":"Actual fresh official YouTube metadata and thumbnails. Owner-delegated assistant metadata reviews are not listening verification; all difficulty remains unassessed."},"reference":{"source":"Owner-supplied 1024x768 study-workspace image","attestation":"Colors sampled from the actual image. Rethink Sans is a deliberate companion face, not a claim about the reference font. No copied people, course content, fake metrics, quizzes or unsupported controls."},"preserve":["routes, consent and privacy boundaries","native YouTube player and original source links","URL-backed filtering and pagination","publication, language and retention safeguards","existing preference keys and resource URLs"],"introduce":["Yorimichi branding and Y monogram","category-first browsing with real counts and covers","forest desktop rail and native keyboard-accessible mobile menu","video workspace with honest metadata and full creator-description disclosure","compact mobile category/subtopic rails","honest empty categories without pretend thumbnail slots"],"review":{"backend":"79 tests passed on the explicit isolated direct Neon test branch","runtime":"Nine real home/category/detail viewport combinations; native content playback; keyboard menu and focus restoration","finish":"Fresh-context image review accepted workspace; mobile hierarchy and empty material findings corrected","kept":"25/25 links, 9/9 fields, 4/4 handlers, 1/1 headings","answers":{"F7":"Reference-derived metadata capsules; no pill-shaped panels or media","F24":"Only the outer reference-inspired app frame combines outline and shadow"}}}
+{
+  "findings": {
+    "framework": "Existing Next.js App Router and Tailwind CSS application",
+    "fonts": "Preserved Rethink Sans via next/font with Japanese-capable system fallback",
+    "palette": "New owner specification: warm #FAFAF4 canvas, forest text and restrained #D7F45B lime",
+    "motion": "State-only hover feedback and reduced-motion fallback",
+    "material": "Actual stored public catalog records and official YouTube thumbnails; no invented content or counts"
+  },
+  "reference": {
+    "source": "/Users/bayu/Downloads/yorimichi-ui-design-spec.md",
+    "attestation": "Newest owner specification supersedes the category portal, sidebar and floating window reference."
+  },
+  "preserve": [
+    "Consent and privacy boundaries",
+    "Public catalog publication and retention guards",
+    "Native YouTube playback and original source links",
+    "URL-backed search, filters and server pagination",
+    "jce.interests.v1 browser-only preferences",
+    "Historic /explore links through query-preserving redirects"
+  ],
+  "introduce": [
+    "Compact Discover, Saved and Interests header",
+    "Video-first canonical root feed with search and topic chips",
+    "Borderless 16:9 video grid with 3/2/1 responsive columns",
+    "Explicit Use my interests action and resettable compact preferences",
+    "Rights-aware transcript workspace and browser-local saved controls"
+  ],
+  "verification": "Integration owner completed 194 direct-Neon tests, six exporter tests, TypeScript, ESLint and production build; real consented browser/paused-seek/private-import/storage/error-retry proof and all four routes at 360/390/768/1280. Hallmark rendered five isolated consent captures with 0 failures/0 Reflex/4 justified warnings; actual functional screenshots and fresh-context visual acceptance are separate."
+}

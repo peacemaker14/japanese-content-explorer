@@ -8,7 +8,7 @@ export default function NotFound() {
         The video may no longer be in the public catalog, or this link may be
         incorrect.
       </p>
-      <Link className="button" href="/explore">
+      <Link className="button" href="/">
         Explore videos
       </Link>
     </section>

@@ -7,9 +7,11 @@ export default function Terms() {
       <p>
         This catalog helps you find authentic Japanese-language YouTube videos
         for immersion learning. It does not own the videos, promise availability
-        or assess your proficiency. Difficulty categories are curator judgments
-        about the language in a video, not JLPT certification or learner
-        placement. Videos without an assessment are labeled Not assessed.
+        or assess your proficiency. Difficulty categories are curator
+        assessments or clearly labeled transcript-based machine estimates, not
+        JLPT certification or learner placement. Videos without either are
+        labeled Unrated. Text-based estimates do not verify listening pace,
+        accents or visual context.
       </p>
       <p>
         Category and subtopic selections may be assistant-reviewed from a
@@ -17,6 +19,19 @@ export default function Terms() {
         spoken language, factual accuracy or learning difficulty. Language
         indicated by creator-provided audio metadata is labeled separately from
         listening verification.
+      </p>
+      <p>
+        Full shared transcripts and summaries require documented permission or
+        a suitable reuse license. Follow the attribution and license notices
+        shown with shared text; creators do not endorse Yorimichi by granting
+        a license. Machine-generated transcripts and summaries can be
+        inaccurate and are not verified against the recording.
+      </p>
+      <p>
+        Personal transcript imports remain in your browser and are never
+        automatically published. Only import material you are entitled to use.
+        Making or possessing a transcript does not grant permission to
+        redistribute the underlying work.
       </p>
       <p>
         By using this site, you agree to the{" "}
@@ -33,8 +48,9 @@ export default function Terms() {
       </p>
       <p>
         Read our <Link href="/privacy">Privacy policy</Link> before continuing.
-        You can withdraw the site acknowledgment using the footer and clear
-        browser-stored preferences in your browser settings.
+        You can withdraw the site acknowledgment using the footer. This does
+        not delete saved videos, interests or personal transcripts; remove
+        those through their controls or clear this site’s browser storage.
       </p>
     </article>
   );

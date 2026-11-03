@@ -48,6 +48,9 @@ export function parseCatalogFilters(raw: RawFilters): CatalogFilters {
     !difficultyValues.some((value) => value === difficulty)
   )
     throw new CatalogFilterError("Unknown difficulty filter.");
+  const transcript = scalar(raw, "transcript") ?? "all";
+  if (transcript !== "all" && transcript !== "available" && transcript !== "unavailable")
+    throw new CatalogFilterError("Unknown transcript filter.");
   const rawPage = scalar(raw, "page") ?? "1";
   const page = Number(rawPage);
   if (!/^[1-9]\d*$/.test(rawPage) || !Number.isSafeInteger(page))
@@ -59,6 +62,7 @@ export function parseCatalogFilters(raw: RawFilters): CatalogFilters {
     sort,
     duration,
     difficulty: difficulty as DifficultyFilter,
+    transcript,
     page,
   };
 }
@@ -73,9 +77,10 @@ export function catalogUrl(
   if (filters.sort !== "newest") query.set("sort", filters.sort);
   if (filters.duration !== "all") query.set("duration", filters.duration);
   if (filters.difficulty !== "all") query.set("difficulty", filters.difficulty);
+  if (filters.transcript !== "all") query.set("transcript", filters.transcript);
   if (page !== 1) query.set("page", String(page));
   const suffix = query.toString();
-  return `/explore${suffix ? `?${suffix}` : ""}`;
+  return `/${suffix ? `?${suffix}` : ""}`;
 }
 export function validateReturnTo(value: unknown): string {
   if (
@@ -84,15 +89,16 @@ export function validateReturnTo(value: unknown): string {
     value.startsWith("//") ||
     value.includes("\\")
   )
-    return "/explore";
+    return "/";
+  if (value === "/saved") return "/saved";
   try {
     const url = new URL(value, "https://catalog.invalid");
     if (
       url.origin !== "https://catalog.invalid" ||
-      url.pathname !== "/explore" ||
+      (url.pathname !== "/" && url.pathname !== "/explore") ||
       url.hash
     )
-      return "/explore";
+      return "/";
     const raw: RawFilters = {};
     for (const key of new Set(url.searchParams.keys())) {
       const values = url.searchParams.getAll(key);
@@ -100,6 +106,6 @@ export function validateReturnTo(value: unknown): string {
     }
     return catalogUrl(parseCatalogFilters(raw));
   } catch {
-    return "/explore";
+    return "/";
   }
 }

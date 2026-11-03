@@ -12,9 +12,11 @@ export function safeNext(value: unknown): string {
     const url = new URL(value, "https://internal.invalid");
     if (url.origin !== "https://internal.invalid") return "/";
     const p = url.pathname;
+    if (p === "/explore") return "/" + url.search;
     if (
       p === "/" ||
-      p === "/explore" ||
+      p === "/saved" ||
+      p === "/interests" ||
       (p.startsWith("/videos/") && youtubeIdPattern.test(p.slice(8)))
     )
       return p + url.search;

@@ -3,12 +3,14 @@ import { safeNext } from "./consent";
 import { authorizedCron } from "./cron-auth";
 describe("safe next destination", () => {
   it("retains only local discovery destinations", () => {
-    expect(safeNext("/explore?interest=gaming")).toBe(
-      "/explore?interest=gaming",
-    );
-    expect(safeNext("/videos/abcdefghijk?returnTo=%2Fexplore")).toContain(
-      "/videos/abcdefghijk",
-    );
+    for (const path of [
+      "/?interest=gaming&transcript=available",
+      "/saved",
+      "/interests",
+      "/videos/abcdefghijk?returnTo=%2F%3Finterest%3Dgaming",
+    ])
+      expect(safeNext(path)).toBe(path);
+    expect(safeNext("/explore?interest=gaming")).toBe("/?interest=gaming");
     for (const value of [
       "//evil.com",
       "https://evil.com",

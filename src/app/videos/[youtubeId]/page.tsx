@@ -5,9 +5,12 @@ import { cache } from "react";
 import { getVideo } from "@/lib/catalog";
 import { validateReturnTo } from "@/lib/catalog-filters";
 import { youtubeIdPattern } from "@/lib/taxonomy";
-import { VideoPlayer } from "@/components/VideoPlayer";
+import { VideoWorkspace } from "@/components/VideoWorkspace";
+import { BookmarkButton } from "@/components/BookmarkButton";
+import { DifficultyBadge } from "@/components/DifficultyBadge";
 import { formatDuration } from "@/components/VideoCard";
-import { difficultyLabels, difficultyGuidance } from "@/lib/difficulty";
+import { difficultyGuidance, presentDifficulty } from "@/lib/difficulty";
+import { getPublicTranscript } from "@/lib/transcripts";
 
 type DetailProps = {
   params: Promise<{ youtubeId: string }>;
@@ -43,6 +46,8 @@ export default async function VideoDetailPage({
   const [{ youtubeId }, query] = await Promise.all([params, searchParams]);
   const video = await publicVideo(youtubeId);
   if (!video) notFound();
+  const transcript = await getPublicTranscript(youtubeId);
+  const difficulty = presentDifficulty(video.difficulty, video.estimatedDifficulty);
   const returnTo = validateReturnTo(query.returnTo);
   const publishedDate = new Date(video.publishedAt).toLocaleDateString(
     "en-GB",
@@ -57,8 +62,13 @@ export default async function VideoDetailPage({
   return (
     <article className="detail-screen">
       <Link className="back-link" href={returnTo}>
-        Back to Explore
+        {returnTo === "/saved" ? "Back to saved videos" : "Back to Discover"}
       </Link>
+      <VideoWorkspace
+        youtubeId={video.youtubeId}
+        madeForKids={video.madeForKids}
+        transcript={transcript}
+      >
       <header className="detail-heading">
         <h1 className="japanese-title" lang="ja">
           {video.title}
@@ -73,14 +83,14 @@ export default async function VideoDetailPage({
             <span>{BigInt(video.viewCount).toLocaleString("en-US")} views</span>
           ) : null}
         </div>
-      </header>
-      <div className="detail-workspace">
-        <div className="player-region">
-          <VideoPlayer
-            youtubeId={video.youtubeId}
-            madeForKids={video.madeForKids}
+        <div className="detail-actions">
+          <DifficultyBadge
+            difficulty={video.difficulty}
+            estimatedDifficulty={video.estimatedDifficulty}
           />
+          <BookmarkButton youtubeId={video.youtubeId} title={video.title} />
         </div>
+      </header>
         <div className="detail-source">
           <span>Source: YouTube</span>
           <a
@@ -94,10 +104,21 @@ export default async function VideoDetailPage({
           </a>
         </div>
         <div className="detail-information">
+          {video.summary ? (
+            <section className="detail-summary" aria-labelledby="summary-heading">
+              <h2 id="summary-heading">Video summary</h2>
+              <p>{video.summary}</p>
+              <p className="helper">
+                {video.summaryBasis === "transcript"
+                  ? "Machine-generated from the transcript; not verified against the recording."
+                  : "Based on video metadata, not a listening review."}
+              </p>
+            </section>
+          ) : null}
           <section className="detail-description">
             <h2>About this video</h2>
             <details className="description-disclosure">
-              <summary>Read creator description</summary>
+              <summary>Read creator description (video metadata)</summary>
               {video.description ? (
                 <p className="source-description" lang="ja">
                   {video.description}
@@ -117,7 +138,7 @@ export default async function VideoDetailPage({
                     {video.interests.map((interest) => (
                       <li key={interest.slug}>
                         <Link
-                          href={`/explore?${new URLSearchParams({ interest: interest.slug })}`}
+                          href={`/?${new URLSearchParams({ interest: interest.slug })}`}
                         >
                           {interest.name}
                         </Link>
@@ -134,7 +155,7 @@ export default async function VideoDetailPage({
                       {video.subtopics.map((subtopic) => (
                         <li key={subtopic.slug}>
                           <Link
-                            href={`/explore?${new URLSearchParams({ subtopic: subtopic.slug })}`}
+                            href={`/?${new URLSearchParams({ subtopic: subtopic.slug })}`}
                           >
                             {subtopic.name}
                           </Link>
@@ -155,15 +176,16 @@ export default async function VideoDetailPage({
                 </div>
               ) : null}
               <div>
-                <dt>Learning difficulty</dt>
+                <dt>Difficulty basis</dt>
                 <dd>
-                  {difficultyLabels[video.difficulty]}
-                  <p className="helper">
-                    {difficultyGuidance[video.difficulty]}
-                    {video.difficulty !== "unassessed"
-                      ? " Curator-rated; not a JLPT level."
-                      : ""}
+                  <p>
+                    {difficulty.isEstimate
+                      ? video.difficultyEstimateNote
+                      : difficultyGuidance[video.difficulty]}
                   </p>
+                  {video.difficulty !== "unassessed" ? (
+                    <p className="helper">Curator assessment; not a JLPT level.</p>
+                  ) : null}
                 </dd>
               </div>
               {video.format ? (
@@ -175,7 +197,7 @@ export default async function VideoDetailPage({
             </dl>
           </section>
         </div>
-      </div>
+      </VideoWorkspace>
     </article>
   );
 }
