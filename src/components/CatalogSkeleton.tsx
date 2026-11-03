@@ -1,3 +1,15 @@
+export function VideoCardSkeleton() {
+  return (
+    <div className="skeleton-video">
+      <div className="skeleton skeleton-thumbnail" />
+      <div className="skeleton skeleton-title" />
+      <div className="skeleton skeleton-title" />
+      <div className="skeleton skeleton-line" />
+      <div className="skeleton skeleton-line skeleton-meta" />
+    </div>
+  );
+}
+
 export function CatalogSkeleton() {
   return (
     <section
@@ -12,11 +24,7 @@ export function CatalogSkeleton() {
       <div className="skeleton skeleton-filters" aria-hidden="true" />
       <div className="video-grid" aria-hidden="true">
         {Array.from({ length: 6 }, (_, index) => (
-          <div className="skeleton-video" key={index}>
-            <div className="skeleton skeleton-thumbnail" />
-            <div className="skeleton skeleton-title" />
-            <div className="skeleton skeleton-line" />
-          </div>
+          <VideoCardSkeleton key={index} />
         ))}
       </div>
     </section>

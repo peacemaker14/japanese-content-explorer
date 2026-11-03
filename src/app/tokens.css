@@ -16,6 +16,10 @@
   --color-error: #a02d25;
   --color-success: #345c3e;
   --color-media-overlay: #14221be6;
+  --color-level-intermediate-bg: #c5e1f5;
+  --color-level-intermediate-ink: #173c56;
+  --color-level-hard-bg: #ffd0a7;
+  --color-level-hard-ink: #572b14;
   --font-japanese: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
   --font-body: var(--font-yorimichi, "Rethink Sans"), "Hiragino Sans", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
   --font-display: var(--font-body);

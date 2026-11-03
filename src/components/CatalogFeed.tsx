@@ -7,6 +7,7 @@ import {
 } from "react";
 import { defaultRangeExtractor, useWindowVirtualizer } from "@tanstack/react-virtual";
 import { VideoCard } from "@/components/VideoCard";
+import { VideoCardSkeleton } from "@/components/CatalogSkeleton";
 import {
   catalogRows, createCatalogFeed, includeFocusedRow, requestCatalogPage, resolvedGridColumns,
 } from "@/lib/catalog-feed";
@@ -188,8 +189,13 @@ function CatalogFeedWindow({ initialPage, filterUrl }: FeedProps) {
             )}
           </div>
           <div className="catalog-feed-trigger" ref={trigger} aria-hidden="true" />
+          {state.loading && (
+            <div className="video-grid catalog-feed-loading" aria-hidden="true">
+              {Array.from({ length: columns * 2 }, (_, index) => <VideoCardSkeleton key={index} />)}
+            </div>
+          )}
           <div className="catalog-feed-status" role="status" aria-live="polite" aria-atomic="true">
-            {state.loading ? <p>Loading more videos…</p> : state.error ? (
+            {state.loading ? <span className="visually-hidden">Loading more videos…</span> : state.error ? (
               <><p>{state.error}</p><button className="button button-secondary" type="button" onClick={() => void feed.loadNext()}>Retry loading videos</button></>
             ) : state.end === "changed" ? (
               <><p>The catalog changed while you were browsing.</p><a className="button button-secondary" href={filterUrl}>Refresh results</a></>

@@ -11,5 +11,5 @@ export function DifficultyBadge({
   estimatedDifficulty?: Difficulty | null;
 }) {
   const presentation = presentDifficulty(difficulty, estimatedDifficulty);
-  return <span className="difficulty-badge">{presentation.label}</span>;
+  return <span className="difficulty-badge" data-difficulty={presentation.value}>{presentation.label}</span>;
 }

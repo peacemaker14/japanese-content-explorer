@@ -2,8 +2,8 @@
   "findings": {
     "framework": "Existing Next.js App Router and Tailwind CSS application",
     "fonts": "Preserved Rethink Sans via next/font with Japanese-capable system fallback",
-    "palette": "New owner specification: warm #FAFAF4 canvas, forest text and restrained #D7F45B lime",
-    "motion": "State-only hover feedback and reduced-motion fallback",
+    "palette": "Approved warm #FAFAF4 canvas, forest text and restrained #D7F45B lime; semantic lime/blue/orange difficulty chips and forest transcript chips",
+    "motion": "Transform-only neutral card shimmer, static shapes under prefers-reduced-motion, and restrained control feedback",
     "material": "Actual stored public catalog records and official YouTube thumbnails; no invented content or counts"
   },
   "reference": {
@@ -14,7 +14,7 @@
     "Consent and privacy boundaries",
     "Public catalog publication and retention guards",
     "Native YouTube playback and original source links",
-    "URL-backed search, filters and server pagination",
+    "URL-backed search and filters with window-virtualized infinite discovery",
     "jce.interests.v1 browser-only preferences",
     "Historic /explore links through query-preserving redirects"
   ],
@@ -23,7 +23,9 @@
     "Video-first canonical root feed with search and topic chips",
     "Borderless 16:9 video grid with 3/2/1 responsive columns",
     "Explicit Use my interests action and resettable compact preferences",
-    "Rights-aware transcript workspace and browser-local saved controls"
+    "Rights-aware transcript workspace and browser-local saved controls",
+    "Two bounded responsive rows of loading cards with a separate polite screen-reader announcement",
+    "Opaque, labeled 14px difficulty and transcript chips that do not rely on color alone"
   ],
-  "verification": "Integration owner completed 194 direct-Neon tests, six exporter tests, TypeScript, ESLint and production build; real consented browser/paused-seek/private-import/storage/error-retry proof and all four routes at 360/390/768/1280. Hallmark rendered five isolated consent captures with 0 failures/0 Reflex/4 justified warnings; actual functional screenshots and fresh-context visual acceptance are separate."
+  "verification": "250 tests across 25 files passed against the direct test branch, plus TypeScript, ESLint and production build. Actual delayed API loads showed 6 desktop/2 phone shimmers, 20-to-40 loaded items, bounded virtualized mounts and successful failure/retry recovery. Reduced motion computed animation none and overlay opacity 0. No overflow at exercised 360/375/390/560/1280 surfaces; narrowest two-column badge gap 45px; level contrasts 12.94/8.51/8.42. Hallmark rendered five isolated consent captures with 0 failures/0 Reflex/4 reviewed warnings; independent fresh-context source and completed-thumbnail mobile/desktop review returned ship. Warnings concern a hidden new-tab suffix, consent/removal labels proven to fit at 320px, and intentional active-navigation versus primary-action treatments. Consented functional captures are separate from automated consent-only renders."
 }
