@@ -4,7 +4,7 @@ export type CatalogFilters = {
   interests: string[];
   subtopics: string[];
   q: string;
-  sort: "newest" | "popular";
+  sort: "featured" | "newest" | "popular";
   duration: "all" | "under-10" | "10-plus";
   difficulty: DifficultyFilter;
   transcript: "all" | "available" | "unavailable";
@@ -25,6 +25,7 @@ export type VideoCardData = {
   viewCount: string | null;
   difficulty: Difficulty;
   estimatedDifficulty?: Difficulty | null;
+  hasSharedTranscript: boolean;
   interests: TopicLabel[];
 };
 export type CategorySummary = Omit<InterestWithSubtopics, "subtopics"> & {

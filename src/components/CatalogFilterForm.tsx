@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { CatalogFilters, InterestWithSubtopics } from "@/lib/catalog-types";
+import { catalogUrl } from "@/lib/catalog-filters";
 import { difficultyLabels, difficultyValues } from "@/lib/difficulty";
 import { TopicChips } from "@/components/TopicChips";
 import { UseMyInterests } from "@/components/InterestPicker";
@@ -31,10 +32,19 @@ export function CatalogFilterForm({ filters, interests, clearHref }: {
       </div>
       <div className="topic-row">
         <TopicChips filters={filters} interests={interests} />
+        <Link
+          className="topic-chip transcript-filter"
+          href={catalogUrl({ ...filters, transcript: filters.transcript === "available" ? "all" : "available", page: 1 })}
+          aria-current={filters.transcript === "available" ? "true" : undefined}
+        >
+          {filters.transcript === "available" && <span aria-hidden="true">✓ </span>}
+          With transcript
+          <span className="visually-hidden">{filters.transcript === "available" ? ", remove transcript filter" : ", show videos with a shared transcript"}</span>
+        </Link>
         <UseMyInterests filters={filters} />
       </div>
       {filters.interests.map((slug) => <input type="hidden" name="interest" value={slug} key={slug} />)}
-      <details className="filter-disclosure" open={filters.difficulty !== "all" || filters.duration !== "all" || filters.transcript !== "all" || filters.sort !== "newest" || filters.subtopics.length > 0}>
+      <details className="filter-disclosure" open={filters.difficulty !== "all" || filters.duration !== "all" || filters.transcript !== "all" || filters.sort !== "featured" || filters.subtopics.length > 0}>
         <summary>Filters <span className="filter-summary">Difficulty, duration, transcript &amp; sort</span></summary>
       <div className="filter-controls">
         <label htmlFor="catalog-difficulty">Difficulty
@@ -56,7 +66,7 @@ export function CatalogFilterForm({ filters, interests, clearHref }: {
         </label>
         <label htmlFor="catalog-sort">Sort by
           <NativeSelect name="sort" id="catalog-sort" defaultValue={filters.sort}>
-            <option value="newest">Newest</option><option value="popular">Most viewed</option>
+            <option value="featured">Featured first</option><option value="newest">Newest</option><option value="popular">Most viewed</option>
           </NativeSelect>
         </label>
         <button className="button button-secondary filter-submit" type="submit">Apply filters</button>
@@ -79,7 +89,7 @@ export function CatalogFilterForm({ filters, interests, clearHref }: {
         </div>
         <button className="button button-secondary" type="submit">Apply subtopics</button>
       </details>
-      <p className="helper difficulty-help" id="difficulty-help">Machine estimates are approximate; curator ratings take precedence. No JLPT equivalence.</p>
+      <p className="helper difficulty-help" id="difficulty-help">Levels are approximate; see video notes for their basis. Curator ratings take precedence. No JLPT equivalence.</p>
       </details>
     </form>
   );

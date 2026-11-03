@@ -69,6 +69,8 @@ describe.skipIf(!hasTestDatabase)("permission-separated transcript database beha
         await applyTranscripts([{ ...privateRecord(), ...rights }], pool);
         expect(await getPublicTranscript("abcdefghijk", pool)).toBeNull();
         expect((await listVideos(parseCatalogFilters({ transcript: "available" }), pool)).total).toBe(0);
+        expect((await listVideos(parseCatalogFilters({}), pool)).items[0].hasSharedTranscript).toBe(false);
+        expect((await getSavedVideos(["abcdefghijk"], pool))[0].hasSharedTranscript).toBe(false);
         expect((await listVideos(parseCatalogFilters({ transcript: "unavailable" }), pool)).total).toBe(1);
       }
       await applyTranscripts([publicRecord()], pool);
@@ -79,6 +81,8 @@ describe.skipIf(!hasTestDatabase)("permission-separated transcript database beha
       expect((await listVideos(parseCatalogFilters({ transcript: "available" }), pool)).total).toBe(1);
       expect((await listVideos(parseCatalogFilters({ transcript: "unavailable" }), pool)).total).toBe(0);
       const card = (await listVideos(parseCatalogFilters({}), pool)).items[0];
+      expect(card.hasSharedTranscript).toBe(true);
+      expect((await getSavedVideos(["abcdefghijk"], pool))[0].hasSharedTranscript).toBe(true);
       expect(card).not.toHaveProperty("segments");
       expect(await getVideo("abcdefghijk", pool)).not.toHaveProperty("segments");
     });
@@ -89,6 +93,8 @@ describe.skipIf(!hasTestDatabase)("permission-separated transcript database beha
       await applyTranscripts([publicRecord()], pool);
       await applyTranscripts([{ ...publicRecord(), sharingPermission: "unknown", permissionNote: null }], pool);
       expect(await getPublicTranscript("abcdefghijk", pool)).toBeNull();
+      expect((await listVideos(parseCatalogFilters({}), pool)).items[0].hasSharedTranscript).toBe(false);
+      expect((await getSavedVideos(["abcdefghijk"], pool))[0].hasSharedTranscript).toBe(false);
       await applyTranscripts([publicRecord()], pool);
       await applyTranscripts([{ ...privateRecord(), source: "creator_provided", segments: [{ start: 1, end: 3, text: "Replacement private body" }] }], pool);
       expect(await getPublicTranscript("abcdefghijk", pool)).toBeNull();
@@ -106,10 +112,15 @@ describe.skipIf(!hasTestDatabase)("permission-separated transcript database beha
         await pool.query(`UPDATE videos SET ${change} WHERE id=$1`, [id]);
         expect(await getPublicTranscript("abcdefghijk", pool)).toBeNull();
         expect((await listVideos(parseCatalogFilters({ transcript: "available" }), pool)).total).toBe(0);
+        expect((await listVideos(parseCatalogFilters({}), pool)).items).toEqual([]);
+        expect(await getSavedVideos(["abcdefghijk", "zzzzzzzzzzz"], pool)).toEqual([]);
+        expect(await getVideo("abcdefghijk", pool)).toBeNull();
       }
       await pool.query("UPDATE videos SET status='published',metadata_updated_at=now(),embeddable=true,language_status='likely_ja' WHERE id=$1", [id]);
       await pool.query("UPDATE video_interests SET source='query',reviewed=false WHERE video_id=$1", [id]);
       expect(await getPublicTranscript("abcdefghijk", pool)).toBeNull();
+      expect((await listVideos(parseCatalogFilters({}), pool)).items).toEqual([]);
+      expect(await getSavedVideos(["abcdefghijk"], pool)).toEqual([]);
       await pool.query("DELETE FROM videos WHERE id=$1", [id]);
       expect((await pool.query("SELECT * FROM transcripts")).rows).toEqual([]);
     });

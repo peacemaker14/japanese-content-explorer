@@ -1,0 +1,19 @@
+{
+  "assetVersion": "ja-20261102-r1",
+  "schemaVersion": 1,
+  "kuromojiVersion": "0.1.2",
+  "wanakanaVersion": "5.3.1",
+  "jmdict": {
+    "release": "3.6.2+20261102210542",
+    "releaseUrl": "https://github.com/scriptin/jmdict-simplified/releases/tag/3.6.2%2B20261102210542",
+    "url": "https://github.com/scriptin/jmdict-simplified/releases/download/3.6.2%2B20261102210542/jmdict-eng-3.6.2%2B20261102210542.json.tgz",
+    "archiveBytes": 11540505,
+    "sha256": "bc1c5240dbdb755a00db488dc74ebfc6c33ffc014d261d64b605fd45cc1dbbb5",
+    "member": "jmdict-eng-3.6.2.json",
+    "copyright": "Copyright James William Breen and the Electronic Dictionary Research and Development Group",
+    "license": "CC-BY-SA-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "attributionUrl": "https://www.edrdg.org/edrdg/licence.html",
+    "projectUrl": "https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project"
+  }
+}

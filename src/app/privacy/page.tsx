@@ -31,9 +31,18 @@ export default function Privacy() {
         storage. Browser storage may be unavailable or cleared by your browser.
       </p>
       <p>
+        Furigana and romaji preferences use localStorage key yorimichi.reader.v1.
+        Reading aids and word lookups run locally in a browser worker. Enabling
+        them downloads versioned language assets from this site, but Yorimichi
+        does not send your transcript text or selected words to a server or
+        dictionary provider. Browser storage may be blocked; in that case,
+        preferences apply only to the current page.
+      </p>
+      <p>
         Resetting acknowledgment only removes the acknowledgment cookie. It
-        does not erase saved videos, interests or personal transcripts. Use
-        their respective controls or clear this site’s browser storage.
+        does not erase saved videos, interests, reading preferences or personal
+        transcripts. Use their respective controls or clear this site’s browser
+        storage.
       </p>
       <h2>Shared learning material</h2>
       <p>

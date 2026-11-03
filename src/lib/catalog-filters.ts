@@ -36,8 +36,8 @@ export function parseCatalogFilters(raw: RawFilters): CatalogFilters {
   const q = (scalar(raw, "q") ?? "").trim();
   if (q.length > 100)
     throw new CatalogFilterError("Search must contain at most 100 characters.");
-  const sort = scalar(raw, "sort") ?? "newest";
-  if (sort !== "newest" && sort !== "popular")
+  const sort = scalar(raw, "sort") ?? "featured";
+  if (sort !== "featured" && sort !== "newest" && sort !== "popular")
     throw new CatalogFilterError("Unknown sort filter.");
   const duration = scalar(raw, "duration") ?? "all";
   if (duration !== "all" && duration !== "under-10" && duration !== "10-plus")
@@ -74,7 +74,7 @@ export function catalogUrl(
   for (const slug of filters.interests) query.append("interest", slug);
   for (const slug of filters.subtopics) query.append("subtopic", slug);
   if (filters.q) query.set("q", filters.q);
-  if (filters.sort !== "newest") query.set("sort", filters.sort);
+  if (filters.sort !== "featured") query.set("sort", filters.sort);
   if (filters.duration !== "all") query.set("duration", filters.duration);
   if (filters.difficulty !== "all") query.set("difficulty", filters.difficulty);
   if (filters.transcript !== "all") query.set("transcript", filters.transcript);
@@ -104,7 +104,7 @@ export function validateReturnTo(value: unknown): string {
       const values = url.searchParams.getAll(key);
       raw[key] = values.length === 1 ? values[0] : values;
     }
-    return catalogUrl(parseCatalogFilters(raw));
+    return catalogUrl(parseCatalogFilters(raw), 1);
   } catch {
     return "/";
   }

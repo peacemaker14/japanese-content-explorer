@@ -7,11 +7,11 @@ export default function Terms() {
       <p>
         This catalog helps you find authentic Japanese-language YouTube videos
         for immersion learning. It does not own the videos, promise availability
-        or assess your proficiency. Difficulty categories are curator
-        assessments or clearly labeled transcript-based machine estimates, not
-        JLPT certification or learner placement. Videos without either are
-        labeled Unrated. Text-based estimates do not verify listening pace,
-        accents or visual context.
+        or assess your proficiency. Difficulty chips reflect curator assessments
+        or approximate transcript-based estimates; their basis is explained in
+        the video notes. They are not JLPT certification or learner placement.
+        Videos without sufficient evidence are labeled Unrated. Text-based
+        estimates do not verify listening pace, accents or visual context.
       </p>
       <p>
         Category and subtopic selections may be assistant-reviewed from a
@@ -33,6 +33,21 @@ export default function Terms() {
         Making or possessing a transcript does not grant permission to
         redistribute the underlying work.
       </p>
+      <h2>Reading aids and dictionary data</h2>
+      <p>
+        Furigana and romaji are automatic reading aids, not verified
+        transcriptions. Names, unusual words and recognition errors may be
+        misread. Dictionary entries give possible meanings, not a translation
+        of the entire sentence.
+      </p>
+      <p>
+        Japanese dictionary data is derived from{" "}
+        <a href="https://www.edrdg.org/jmdict/j_jmdict.html">JMdict</a>, copyright
+        the Electronic Dictionary Research and Development Group, and is
+        distributed under{" "}
+        <a href="https://www.edrdg.org/edrdg/licence.html">CC BY-SA 4.0</a>.
+        Dictionary data and its required notices accompany the language assets.
+      </p>
       <p>
         By using this site, you agree to the{" "}
         <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>.
@@ -49,8 +64,9 @@ export default function Terms() {
       <p>
         Read our <Link href="/privacy">Privacy policy</Link> before continuing.
         You can withdraw the site acknowledgment using the footer. This does
-        not delete saved videos, interests or personal transcripts; remove
-        those through their controls or clear this site’s browser storage.
+        not delete saved videos, interests, reading preferences or personal
+        transcripts; remove those through their controls or clear this site’s
+        browser storage.
       </p>
     </article>
   );

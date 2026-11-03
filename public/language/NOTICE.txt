@@ -1,0 +1,104 @@
+Yorimichi browser-local Japanese reading tools — sources and notices
+
+JMdict / EDRDG
+The dictionary uses the complete English JMdict release distributed by
+scriptin/jmdict-simplified, NOT the common-only subset. JMdict is copyright
+James William Breen and the Electronic Dictionary Research and Development
+Group (EDRDG). Project initiated in 1991 by Jim Breen.
+
+Source and documentation:
+https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project
+https://www.edrdg.org/edrdg/licence.html
+https://github.com/scriptin/jmdict-simplified
+
+JMdict and the derived language data are provided under Creative Commons
+Attribution-ShareAlike 4.0 International (CC BY-SA 4.0):
+https://creativecommons.org/licenses/by-sa/4.0/
+https://creativecommons.org/licenses/by-sa/4.0/legalcode
+
+All dictionary entries, Japanese spellings, readings, reading restrictions,
+and English sense restrictions are retained. English glosses, their type/
+gender qualifiers and sense notes are projected for display. Unused source
+metadata and non-English glosses are omitted. An exact Japanese form index
+is built locally in the browser worker. This transformation and compression
+do not change EDRDG's ownership. Derived data may be shared and adapted under
+the same CC BY-SA 4.0 license with attribution and indication of changes.
+The application code is separate from this data license. No endorsement by
+EDRDG or the source projects is implied. The dictionary is provided without
+warranty; its accuracy or suitability for a particular purpose is not guaranteed.
+
+The pinned release URL, archive SHA256, exact entry/sense counts, dictionary
+source date, transformations, package versions, npm integrity values and
+all output checksums are in each version's manifest.json and SHA256SUMS.txt.
+The source lock is src/lib/japanese-language-source.json in the public source.
+
+Regular update procedure (at least monthly, as required by EDRDG):
+1. Review the latest public scriptin/jmdict-simplified release and select the
+   complete jmdict-eng archive, never jmdict-eng-common.
+2. Update release, URL, member, archive byte count and independently reviewed
+   GitHub release SHA256 digest in src/lib/japanese-language-source.json.
+3. Bump assetVersion for every dictionary, worker or reading-engine change.
+4. Run npm ci, then npm run language:prepare. Preparation checks the locked
+   archive digest and full-English/non-common status, retains every entry,
+   and writes deterministic compressed assets and provenance. It will refuse
+   to replace different content at an existing immutable version URL.
+5. Review the generated date, complete entry/sense counts, checksums, notices,
+   real readings and lookup behavior. Publish the versioned assets with the
+   matching application and legal attribution. Remove unused old releases
+   from the deployment when no longer referenced. Do not keep serving an
+   outdated data version in lieu of performing the monthly update.
+
+Kuromoji 0.1.2 — Apache License 2.0
+Copyright 2014 Takuya Asano
+Copyright 2010–2014 Atilika Inc. and contributors
+https://github.com/takuyaa/kuromoji.js
+Full Apache license: licenses/KUROMOJI-APACHE-2.0.txt in the version directory.
+
+The packaged mecab-ipadic-2.7.0-20070801 data has separate NAIST/ICOT
+copyright and warranty terms. Its COMPLETE required notices accompany every
+prepared release as licenses/IPADIC-NOTICE.txt. Consult that file, not just
+the Kuromoji Apache license, for data redistribution conditions.
+
+WanaKana 5.3.1 — MIT
+https://github.com/WaniKani/WanaKana
+Full copyright and permission notice: licenses/WANAKANA-MIT.txt.
+The public Tombo romaji helper informed small-tsu/next-token handling; no
+Tombo runtime, database, transcripts or private learning data are used.
+
+Bundled Kuromoji browser dependencies include async, doublearray, zlib.js,
+lodash portions and Node/browser polyfills. Their applicable MIT notices are
+provided in licenses/ASYNC-MIT.txt, DOUBLEARRAY-MIT.txt, ZLIBJS-MIT.txt and
+LODASH-MIT.txt. Browser path/process polyfill notice:
+
+Copyright Joyent, Inc. and other Node contributors.
+Copyright (c) 2013 Roman Shtylman <shtylman+git@gmail.com>.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to
+do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Privacy and limits
+Language assets use fixed, versioned, same-origin URLs. No selected word,
+cue text, prefix, hash or text-derived shard selector is requested remotely.
+Kuromoji data is loaded only on first reading/lookup activation. The complete
+English dictionary is loaded only on first word lookup; its exact-form index
+exists in a browser worker, not a remote search service. There is no user-text
+cache, text logging, sentence translation or AI-generated definition. Unknown
+kanji retain their original surface without an invented kana or romaji reading.
+Kuromoji/IPADIC is a morphological dictionary, not a guarantee of correct
+contextual readings. JMdict is a general dictionary, not a proper-name database.
+Reading and dictionary processing never controls native-player playback.

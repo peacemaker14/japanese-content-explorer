@@ -19,6 +19,7 @@ export const sharedTranscriptPredicate = `EXISTS (SELECT 1 FROM transcripts t WH
 const cardColumns = `v.youtube_id AS "youtubeId", v.title, v.channel_title AS "channelTitle",
  v.thumbnail_url AS "thumbnailUrl", v.published_at AS "publishedAt", v.duration_seconds AS "durationSeconds",
  v.view_count::text AS "viewCount", v.difficulty, v.estimated_difficulty AS "estimatedDifficulty",
+ ${sharedTranscriptPredicate} AS "hasSharedTranscript",
  COALESCE((SELECT json_agg(json_build_object('slug', i.slug, 'name', i.name) ORDER BY i.slug)
  FROM video_interests vi JOIN interests i ON i.id = vi.interest_id
  WHERE vi.video_id = v.id AND vi.reviewed = true AND vi.source = 'manual'), '[]'::json) AS interests`;
@@ -84,7 +85,9 @@ export async function listVideos(
     const order =
       filters.sort === "popular"
         ? "v.view_count DESC NULLS LAST, v.published_at DESC, v.youtube_id ASC"
-        : "v.published_at DESC, v.youtube_id ASC";
+        : filters.sort === "featured"
+          ? '"hasSharedTranscript" DESC, v.published_at DESC, v.youtube_id ASC'
+          : "v.published_at DESC, v.youtube_id ASC";
     const result = await client.query<CardRow>(
       `SELECT ${cardColumns} FROM videos v WHERE ${where.sql} ORDER BY ${order} LIMIT 20 OFFSET $${where.values.length + 1}`,
       [...where.values, (page - 1) * 20],

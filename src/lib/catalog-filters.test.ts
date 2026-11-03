@@ -28,6 +28,17 @@ describe("catalog filters", () => {
   ])("rejects malformed filters %j", (raw) => {
     expect(() => parseCatalogFilters(raw)).toThrow(CatalogFilterError);
   });
+  it("defaults to featured while retaining explicit newest and popular in shared URLs", () => {
+    expect(parseCatalogFilters({}).sort).toBe("featured");
+    expect(catalogUrl(parseCatalogFilters({}))).toBe("/");
+    expect(catalogUrl(parseCatalogFilters({ sort: "featured" }))).toBe("/");
+    for (const sort of ["newest", "popular"] as const) {
+      const filters = parseCatalogFilters({ sort });
+      expect(filters.sort).toBe(sort);
+      expect(catalogUrl(filters)).toBe(`/?sort=${sort}`);
+      expect(validateReturnTo(`/?sort=${sort}&page=4`)).toBe(`/?sort=${sort}`);
+    }
+  });
   it("round-trips repeated topics, literal search and pagination", () => {
     const filters = parseCatalogFilters({
       interest: ["gaming", "food-cooking", "gaming"],
@@ -64,7 +75,7 @@ describe("catalog filters", () => {
   });
   it("validates return links with the same parser", () => {
     expect(validateReturnTo("/explore?interest=gaming&page=2")).toBe(
-      "/?interest=gaming&page=2",
+      "/?interest=gaming",
     );
     expect(validateReturnTo("/?transcript=available&difficulty=beginner")).toBe(
       "/?difficulty=beginner&transcript=available",

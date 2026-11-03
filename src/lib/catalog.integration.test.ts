@@ -4,6 +4,7 @@ import { hasTestDatabase, withTestDatabase } from "../../tests/database";
 import { getSavedVideos, getVideo, listCategories, listVideos } from "./catalog-core";
 import { parseCatalogFilters } from "./catalog-filters";
 import type { Difficulty } from "./difficulty";
+import { applyTranscripts } from "./transcripts-core";
 
 async function fixture(
   pool: Pool,
@@ -19,6 +20,7 @@ async function fixture(
     manual?: boolean;
     embeddable?: boolean;
     difficulty?: Difficulty;
+    publishedAt?: string;
   } = {},
 ) {
   const youtubeId = `v${String(n).padStart(10, "0")}`;
@@ -26,7 +28,7 @@ async function fixture(
     rows: [row],
   } = await pool.query(
     `INSERT INTO videos (youtube_id,title,description,channel_id,channel_title,published_at,duration_seconds,view_count,status,embeddable,metadata_updated_at,default_audio_language,language_status,made_for_kids,difficulty)
-    VALUES ($1,$2,'Description','channel','Channel','2026-01-01', $3,$4,$5,$6,now()-($7::integer * interval '1 day'),'ja','likely_ja',false,$8) RETURNING id`,
+    VALUES ($1,$2,'Description','channel','Channel',$9, $3,$4,$5,$6,now()-($7::integer * interval '1 day'),'ja','likely_ja',false,$8) RETURNING id`,
     [
       youtubeId,
       options.title ?? `Video ${n}`,
@@ -36,6 +38,7 @@ async function fixture(
       options.embeddable ?? true,
       options.age ?? 0,
       options.difficulty ?? "unassessed",
+      options.publishedAt ?? "2026-01-01",
     ],
   );
   for (const slug of options.interests ?? ["gaming"])
@@ -92,6 +95,73 @@ describe.skipIf(!hasTestDatabase)("public catalog database behavior", () => {
       ]);
       expect(result.items[0].viewCount).toBe("9007199254740993");
       expect(result.items[2].viewCount).toBeNull();
+    });
+  });
+  it("features only public granted transcripts with stable date/ID ties and leaves explicit sorts unchanged", async () => {
+    await withTestDatabase(async (pool) => {
+      const absent = await fixture(pool, 1, { publishedAt: "2026-05-01", views: "1000" });
+      const privateUnknown = await fixture(pool, 2, { publishedAt: "2026-04-01", views: "900" });
+      const privateGranted = await fixture(pool, 3, { publishedAt: "2026-03-01", views: "800" });
+      const publicUnknown = await fixture(pool, 4, { publishedAt: "2026-02-01", views: "700" });
+      const shared = await fixture(pool, 5);
+      const sharedTie = await fixture(pool, 6);
+      const sharedOlder = await fixture(pool, 7, {
+        publishedAt: "2025-12-01",
+        interests: ["food-cooking"],
+        subtopic: "food-cooking/coffee",
+        duration: 599,
+        difficulty: "beginner",
+      });
+      const transcript = (videoId: string) => ({
+        videoId,
+        source: "creator_provided",
+        segments: [{ start: 0, end: 2, text: "Test transcript body, not card data" }],
+      });
+      await applyTranscripts([
+        transcript(privateUnknown),
+        { ...transcript(privateGranted), sharingPermission: "granted", permissionNote: "Test-only rights evidence" },
+        { ...transcript(publicUnknown), visibility: "public", attribution: "Test creator" },
+        ...[shared, sharedTie, sharedOlder].map((id) => ({
+          ...transcript(id), visibility: "public", sharingPermission: "granted",
+          permissionNote: "Test-only rights evidence", attribution: "Test creator",
+        })),
+      ], pool);
+
+      const featured = await listVideos(parseCatalogFilters({}), pool);
+      expect(featured.items.map((video) => [video.youtubeId, video.hasSharedTranscript])).toEqual([
+        [shared, true], [sharedTie, true], [sharedOlder, true],
+        [absent, false], [privateUnknown, false], [privateGranted, false], [publicUnknown, false],
+      ]);
+      expect(featured.total).toBe(7);
+      for (const sort of ["newest", "popular"]) {
+        const explicit = await listVideos(parseCatalogFilters({ sort }), pool);
+        expect(explicit.items.map((video) => video.youtubeId)).toEqual([
+          absent, privateUnknown, privateGranted, publicUnknown, shared, sharedTie, sharedOlder,
+        ]);
+      }
+      expect((await listVideos(parseCatalogFilters({ transcript: "available" }), pool)).items.map((video) => video.youtubeId))
+        .toEqual([shared, sharedTie, sharedOlder]);
+      expect((await listVideos(parseCatalogFilters({ transcript: "unavailable" }), pool)).items.map((video) => video.youtubeId))
+        .toEqual([absent, privateUnknown, privateGranted, publicUnknown]);
+      const combined = parseCatalogFilters({
+        transcript: "available", interest: "food-cooking", subtopic: "food-cooking/coffee",
+        duration: "under-10", difficulty: "beginner", q: "Video 7",
+      });
+      expect((await listVideos(combined, pool)).items.map((video) => video.youtubeId)).toEqual([sharedOlder]);
+      expect((await listVideos({ ...combined, transcript: "unavailable" }, pool)).total).toBe(0);
+      const saved = await getSavedVideos([publicUnknown, sharedOlder, privateGranted, sharedTie, privateUnknown, shared, absent], pool);
+      expect(saved.map((video) => video.hasSharedTranscript)).toEqual([false, true, false, true, false, true, false]);
+      for (const video of [...featured.items, ...saved]) {
+        expect(video).not.toHaveProperty("segments");
+        expect(video).not.toHaveProperty("permissionNote");
+        expect(JSON.stringify(video)).not.toContain("Test transcript body");
+        expect(JSON.stringify(video)).not.toContain("Test-only rights evidence");
+      }
+
+      await applyTranscripts([transcript(shared)], pool);
+      expect((await listVideos(parseCatalogFilters({}), pool)).items.map((video) => video.youtubeId))
+        .toEqual([sharedTie, sharedOlder, absent, privateUnknown, privateGranted, publicUnknown, shared]);
+      expect((await getSavedVideos([shared], pool))[0].hasSharedTranscript).toBe(false);
     });
   });
   it("applies OR within groups, AND across groups, literal keyword escaping and 600-second boundary", async () => {

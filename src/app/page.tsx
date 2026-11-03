@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { listCategories, listVideos } from "@/lib/catalog";
-import { CatalogFilterError, catalogUrl, parseCatalogFilters } from "@/lib/catalog-filters";
+import { CatalogFilterError, parseCatalogFilters } from "@/lib/catalog-filters";
 import { CatalogFilterForm } from "@/components/CatalogFilterForm";
-import { CatalogPagination } from "@/components/CatalogPagination";
-import { VideoCard } from "@/components/VideoCard";
+import { CatalogFeed } from "@/components/CatalogFeed";
+import { catalogFeedUrl } from "@/lib/catalog-feed";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,9 +17,10 @@ export const metadata: Metadata = {
 export default async function DiscoverPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const raw = await searchParams;
   let filters;
   try {
-    filters = parseCatalogFilters(await searchParams);
+    filters = parseCatalogFilters(raw);
   } catch (error) {
     if (!(error instanceof CatalogFilterError)) throw error;
     return (
@@ -30,9 +31,9 @@ export default async function DiscoverPage({ searchParams }: {
       </section>
     );
   }
+  const returnTo = catalogFeedUrl(filters);
+  if (raw.page !== undefined) redirect(returnTo);
   const [result, interests] = await Promise.all([listVideos(filters), listCategories()]);
-  if (result.page !== filters.page) redirect(catalogUrl(filters, result.page));
-  const returnTo = catalogUrl(filters);
   return (
     <section className="discover-screen">
       <header className="discover-hero">
@@ -40,22 +41,7 @@ export default async function DiscoverPage({ searchParams }: {
         <p>Discover Japanese videos about things you already love.</p>
       </header>
       <CatalogFilterForm key={returnTo} filters={filters} interests={interests} clearHref="/" />
-      <div className="feed-heading">
-        <h2 id="explore-videos">Explore videos</h2>
-        <p className="result-count">{result.total.toLocaleString("en-US")} {result.total === 1 ? "video" : "videos"} matched</p>
-      </div>
-      {result.items.length ? (
-        <div className="video-grid" aria-labelledby="explore-videos">
-          {result.items.map((video) => <VideoCard key={video.youtubeId} video={video} returnTo={returnTo} />)}
-        </div>
-      ) : (
-        <div className="state-panel empty-state">
-          <h2>No videos match these filters</h2>
-          <p>Try a different topic or keyword. Only currently published videos appear here.</p>
-          <Link className="button button-secondary" href="/">Clear filters</Link>
-        </div>
-      )}
-      <CatalogPagination filters={filters} page={result.page} totalPages={result.totalPages} />
+      <CatalogFeed initialPage={result} filterUrl={returnTo} />
     </section>
   );
 }

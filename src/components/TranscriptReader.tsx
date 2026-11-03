@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 import type { PublicTranscript } from "@/lib/transcript-types";
 import type { PersonalTranscript } from "@/lib/personal-transcript";
 import type { PersonalTranscriptNotice } from "@/lib/use-personal-transcript";
-import { formatTranscriptTime } from "@/lib/transcript-cues";
+import { TranscriptWords } from "./TranscriptWords";
 
 interface TranscriptReaderProps {
   transcript: PublicTranscript | PersonalTranscript | null;
@@ -53,37 +53,15 @@ export function TranscriptReader({
   onRemove,
 }: TranscriptReaderProps) {
   const id = useId();
-  const list = useRef<HTMLOListElement>(null);
-  const lines = useRef(new Map<number, HTMLButtonElement>());
-  const expectedScrollTop = useRef<number | null>(null);
   const [following, setFollowing] = useState<PublicTranscript | PersonalTranscript | null>(null);
   const autoFollow = transcript !== null && following === transcript;
   const licenseUrl = transcript?.visibility === "public"
     ? safeLicenseUrl(transcript.licenseUrl) : null;
 
   function pauseFollow() {
-    expectedScrollTop.current = null;
     setFollowing(null);
   }
 
-  useEffect(() => {
-    if (!autoFollow || activeIndex === null) return;
-    const panel = list.current;
-    const line = lines.current.get(activeIndex);
-    if (!panel || !line || panel.contains(document.activeElement)) return;
-    const viewport = panel.getBoundingClientRect();
-    const bounds = line.getBoundingClientRect();
-    const top = viewport.top + panel.clientTop;
-    const bottom = top + panel.clientHeight;
-    let delta = 0;
-    if (bounds.top < top) delta = bounds.top - top - 12;
-    else if (bounds.bottom > bottom) delta = bounds.bottom - bottom + 12;
-    if (delta === 0) return;
-    // Intentionally instant, including under reduced motion. Never use
-    // scrollIntoView: it can scroll the entire page and steal reading position.
-    panel.scrollTop += delta;
-    expectedScrollTop.current = panel.scrollTop;
-  }, [activeIndex, autoFollow, transcript]);
 
   return (
     <section className="transcript-panel" aria-labelledby={`${id}-heading`}>
@@ -144,67 +122,21 @@ export function TranscriptReader({
           </p>
           <p className="transcript-status" id={`${id}-help`}>
             {canSeek
-              ? "Select a sentence to seek without starting paused playback."
+              ? "Select a timestamp to seek without starting paused playback."
               : embedAllowed
-                ? "Sentence seeking is available when the YouTube player is ready."
-                : "Read here; playback and seeking are available only on YouTube for this video."}
+                ? "Timestamp seeking is available when the YouTube player is ready."
+                : "Read and look up words here; playback and seeking are available only on YouTube for this video."}
             {" "}Auto-follow starts off. Scrolling or focusing the reader turns it off.
           </p>
-          <ol
-            ref={list}
-            id={`${id}-sentences`}
-            className="transcript-list"
-            tabIndex={0}
-            aria-label="Transcript sentences"
-            aria-describedby={`${id}-help`}
-            onWheel={pauseFollow}
-            onTouchStart={pauseFollow}
-            onPointerDown={(event) => {
-              if (event.target === event.currentTarget) pauseFollow();
-            }}
-            onFocusCapture={pauseFollow}
-            onKeyDown={(event) => {
-              if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key))
-                pauseFollow();
-            }}
-            onScroll={() => {
-              const panel = list.current;
-              if (!panel) return;
-              if (expectedScrollTop.current !== null &&
-                Math.abs(panel.scrollTop - expectedScrollTop.current) < 2) {
-                expectedScrollTop.current = null;
-                return;
-              }
-              pauseFollow();
-            }}
-          >
-            {transcript.segments.map((segment, index) => {
-              const active = activeIndex === index;
-              const time = formatTranscriptTime(segment.start);
-              return (
-                <li key={index}>
-                  <button
-                    ref={(node) => {
-                      if (node) lines.current.set(index, node);
-                      else lines.current.delete(index);
-                    }}
-                    className={`transcript-line${active ? " is-active" : ""}`}
-                    type="button"
-                    disabled={!canSeek}
-                    aria-current={active ? "true" : undefined}
-                    aria-label={`Seek to ${time}. ${segment.text}`}
-                    onClick={() => onSeek(segment.start)}
-                  >
-                    <span className="transcript-timestamp">{time}</span>
-                    <span lang={transcript.visibility === "public" ? "ja" : undefined}>
-                      {segment.text}
-                      {active && <span className="transcript-current" lang="en">Current sentence</span>}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
+          <TranscriptWords
+            transcript={transcript}
+            activeIndex={activeIndex}
+            canSeek={canSeek}
+            autoFollow={autoFollow}
+            id={id}
+            onSeek={onSeek}
+            onInteract={pauseFollow}
+          />
           {transcript.visibility === "public" ? (
             <details className="transcript-attribution">
               <summary>Attribution and license</summary>

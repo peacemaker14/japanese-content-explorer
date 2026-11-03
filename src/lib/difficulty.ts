@@ -12,7 +12,7 @@ export const difficultyLabels: Record<Difficulty, string> = {
   unassessed: "Unrated",
   beginner: "Beginner",
   intermediate: "Intermediate",
-  advanced: "Advanced",
+  advanced: "Hard",
 };
 
 export const difficultyGuidance: Record<Difficulty, string> = {
@@ -38,7 +38,7 @@ export function presentDifficulty(
   if (estimatedDifficulty && estimatedDifficulty !== "unassessed") {
     return {
       value: estimatedDifficulty,
-      label: `${difficultyLabels[estimatedDifficulty]} (machine estimate)`,
+      label: difficultyLabels[estimatedDifficulty],
       isEstimate: true,
     };
   }

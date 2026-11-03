@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Prepared vendor bundle; its TypeScript source remains linted.
+    "public/language/*/worker.js",
   ]),
 ]);
 

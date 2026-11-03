@@ -22,6 +22,13 @@ export function VideoCard({
       <Link className="video-card-link" href={href}>
         <div className="video-thumbnail-wrap">
           <VideoThumbnail src={video.thumbnailUrl} />
+          <span className="video-level">
+            <DifficultyBadge
+              difficulty={video.difficulty}
+              estimatedDifficulty={video.estimatedDifficulty}
+            />
+          </span>
+          {video.hasSharedTranscript && <span className="video-transcript">Transcript</span>}
           <span
             className="video-duration"
             aria-label={`Duration ${Math.floor(video.durationSeconds / 60)} minutes ${video.durationSeconds % 60} seconds`}
@@ -37,10 +44,6 @@ export function VideoCard({
         {video.channelTitle}
       </p>
       <div className="video-details">
-        <DifficultyBadge
-          difficulty={video.difficulty}
-          estimatedDifficulty={video.estimatedDifficulty}
-        />
         <span className="video-source">YouTube</span>
       </div>
       <BookmarkButton youtubeId={video.youtubeId} title={video.title} />
