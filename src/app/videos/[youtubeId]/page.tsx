@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { ArrowLeft } from "lucide-react";
 import { getVideo } from "@/lib/catalog";
 import { validateReturnTo } from "@/lib/catalog-filters";
 import { youtubeIdPattern } from "@/lib/taxonomy";
@@ -62,10 +63,12 @@ export default async function VideoDetailPage({
         : "Japanese not verified";
   return (
     <article className="detail-screen">
-      <Button asChild variant="link" className="back-link">
-      <Link href={returnTo}>
-        {returnTo === "/saved" ? "Back to saved videos" : "Back to Discover"}
-      </Link>
+      <Button asChild variant="outline" size="icon" className="back-link">
+        <Link href={returnTo}
+          aria-label={returnTo === "/saved" ? "Back to saved videos" : "Back to Discover"}
+          title={returnTo === "/saved" ? "Back to saved videos" : "Back to Discover"}>
+          <ArrowLeft aria-hidden="true" />
+        </Link>
       </Button>
       <VideoWorkspace
         youtubeId={video.youtubeId}

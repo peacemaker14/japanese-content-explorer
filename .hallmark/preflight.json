@@ -27,7 +27,11 @@
     "Two bounded responsive rows of loading cards with a separate polite screen-reader announcement",
     "Opaque, labeled 14px difficulty and transcript chips that do not rely on color alone",
     "Branded shadcn Button, Input, Select, Checkbox and RadioGroup across existing common controls",
-    "Immediate composed filter intent with cancellable Next navigation and preserved pending feed geometry"
+    "Immediate composed filter intent with cancellable Next navigation and preserved pending feed geometry",
+    "Always-visible colored difficulty chips that compose with topic filters and replace the difficulty dropdown",
+    "Stable viewport scrollbar gutter without duplicate Radix scroll-lock compensation",
+    "Accessible 44px icon-only return links preserving validated Discover/Saved destinations"
   ],
+  "componentVerification": "Difficulty-chip, popup-geometry and icon-return update passed TypeScript, ESLint and production build. Actual browser checks passed rapid Gaming/Intermediate composition, keyboard activation, level deselection/history, five visible 44px phone chips, and icon-only return navigation. All three remaining Select popups preserved header/form positions, widths and scroll offsets on 1280px/390px surfaces with a real 15px scrollbar; Radix scroll locking remained active. Hallmark rendered five consent-only captures with 0 failures/0 Reflex and the existing shared-variant F4 warning.",
   "verification": "248 tests across 25 files passed against the direct test branch, plus TypeScript, ESLint and production build. Real browser checks passed rapid composed filters, editable drafts during requests, keyboard Select navigation/Escape, preference reset, private/shared transcript switching, dictionary lookup and preserved player iframe identity. Unchanged submissions and canceled navigation retained 40 loaded videos and DOM identity; Back restored exactly 500px. Phone search input/button both measured 48px with no overflow; reduced-motion feedback was verified. Hallmark rendered five consent-only captures with 0 failures/0 Reflex/1 reviewed F4 warning: primary, destructive and selected-toggle primitive recipes are distinct semantic states, not competing page actions. Kept audit retained 29/29 links, 10/10 fields, 1/1 headings and 40/43 native handlers; three replaced checkbox/radio wrappers are recorded, with equivalent Radix callbacks browser-verified. Independent fresh-context finish review returned ship; consented functional captures were reviewed separately."
 }

@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const difficultyChips = ["all", ...difficultyValues.filter((value) => value !== "unassessed"), "unassessed"] as const;
+
 export function CatalogFilterForm({ filters, interests, clearHref }: {
   filters: CatalogFilters;
   interests: InterestWithSubtopics[];
@@ -75,27 +77,40 @@ export function CatalogFilterForm({ filters, interests, clearHref }: {
         </Button>
         <UseMyInterests filters={filters} />
       </div>
+      <div className="difficulty-row">
+        <span className="difficulty-label" id="difficulty-label">Difficulty</span>
+        <nav className="difficulty-chips" aria-labelledby="difficulty-label" aria-describedby="difficulty-help">
+          {difficultyChips.map((difficulty) => {
+            const selected = filters.difficulty === difficulty;
+            return (
+              <Button asChild variant="ghost" size="sm" className="difficulty-chip" key={difficulty}>
+                <Link
+                  href={catalogUrl({ ...filters, difficulty: selected ? "all" : difficulty, page: 1 })}
+                  prefetch={false}
+                  data-difficulty={difficulty}
+                  aria-current={selected ? "true" : undefined}
+                  onClick={(event) => navigation?.follow(event, (current) => ({
+                    ...current, difficulty: current.difficulty === difficulty ? "all" : difficulty, page: 1,
+                  }))}
+                >
+                  {selected && <span aria-hidden="true">✓</span>}
+                  {difficulty === "all" ? "Any level" : difficultyLabels[difficulty]}
+                </Link>
+              </Button>
+            );
+          })}
+        </nav>
+      </div>
+      <p className="helper difficulty-help" id="difficulty-help">Levels are approximate; see video notes for their basis. Curator ratings take precedence. No JLPT equivalence.</p>
       {filters.interests.map((slug) => <input type="hidden" name="interest" value={slug} key={slug} />)}
       {/* Keep GET values available before Radix hydrates its menu items. */}
       <input type="hidden" name="difficulty" value={values.difficulty} />
       <input type="hidden" name="duration" value={values.duration} />
       <input type="hidden" name="transcript" value={values.transcript} />
       <input type="hidden" name="sort" value={values.sort} />
-      <details className="filter-disclosure" open={filters.difficulty !== "all" || filters.duration !== "all" || filters.transcript !== "all" || filters.sort !== "featured" || filters.subtopics.length > 0}>
-        <summary>Filters <span className="filter-summary">Difficulty, duration, transcript &amp; sort</span></summary>
+      <details className="filter-disclosure" open={filters.duration !== "all" || filters.transcript !== "all" || filters.sort !== "featured" || filters.subtopics.length > 0}>
+        <summary>Filters <span className="filter-summary">Duration, transcript &amp; sort</span></summary>
       <div className="filter-controls">
-        <label htmlFor="catalog-difficulty">Difficulty
-          <Select value={values.difficulty} onValueChange={(value) => updateDraft("difficulty", value as CatalogFilters["difficulty"])}>
-            <SelectTrigger id="catalog-difficulty" aria-describedby="difficulty-help">
-              <SelectValue>{values.difficulty === "all" ? "Any difficulty" : values.difficulty === "unassessed" ? "Unrated" : difficultyLabels[values.difficulty]}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Any difficulty</SelectItem>
-              {difficultyValues.filter((value) => value !== "unassessed").map((value) => <SelectItem value={value} key={value}>{difficultyLabels[value]}</SelectItem>)}
-              <SelectItem value="unassessed">Unrated</SelectItem>
-            </SelectContent>
-          </Select>
-        </label>
         <label htmlFor="catalog-duration">Duration
           <Select value={values.duration} onValueChange={(value) => updateDraft("duration", value as CatalogFilters["duration"])}>
             <SelectTrigger id="catalog-duration">
@@ -151,7 +166,6 @@ export function CatalogFilterForm({ filters, interests, clearHref }: {
         </div>
         <Button variant="outline" type="submit">Apply subtopics</Button>
       </details>
-      <p className="helper difficulty-help" id="difficulty-help">Levels are approximate; see video notes for their basis. Curator ratings take precedence. No JLPT equivalence.</p>
       </details>
     </Form>
   );
